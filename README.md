@@ -23,6 +23,11 @@ an example.
 CEF2go is licensed under the BSD 3-clause license, see the LICENSE
 file.
 
+This Fork
+---------
+This fork just restructures the source so its easier to 'go get' and get started.
+It removes copies of 3rd party libraries. This fork has also only been tested on Windows.
+
 Communication between Go and Javascript
 ---------------------------------------
 For now to make communication between Go and javascript possible

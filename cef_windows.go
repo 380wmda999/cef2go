@@ -2,11 +2,11 @@
 // License: BSD 3-clause.
 // Website: https://github.com/CzarekTomczak/cef2go
 
-package cef
+package cef2go
 
 /*
-#cgo CFLAGS: -I./../../
-#cgo LDFLAGS: -L./../../Release -llibcef
+#cgo CFLAGS: -I.
+#cgo LDFLAGS: -L./Release -llibcef
 #include <stdlib.h>
 #include "string.h"
 #include "include/capi/cef_app_capi.h"

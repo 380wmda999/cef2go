@@ -2,7 +2,7 @@
 // License: BSD 3-clause.
 // Website: https://github.com/CzarekTomczak/cef2go
 
-package cef
+package cef2go
 
 /*
 CEF capi fixes
@@ -21,7 +21,7 @@ CEF capi fixes
 */
 
 /*
-#cgo CFLAGS: -I./../../
+#cgo CFLAGS: -I.
 #include <stdlib.h>
 #include "string.h"
 #include "include/capi/cef_app_capi.h"

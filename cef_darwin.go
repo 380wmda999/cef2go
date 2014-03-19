@@ -2,10 +2,10 @@
 // License: BSD 3-clause.
 // Website: https://github.com/CzarekTomczak/cef2go
 
-package cef
+package cef2go
 
 /*
-#cgo CFLAGS: -I./../../ -x objective-c
+#cgo CFLAGS: -I. -x objective-c
 #cgo LDFLAGS: -framework Cocoa
 #include <stdlib.h>
 #include <string.h>
