@@ -30,7 +30,7 @@ func go_OnBeforeBrowse(
     cString := C.cef_request_get_url(request)
     fmt.Printf("go_OnBeforeBrowse: %p\n", cString)
     str := C.GoString(cString)
-    defer C.free(unsafe.Pointer(cString))
+    //defer C.free(unsafe.Pointer(cString))
     fmt.Printf("go_OnBeforeBrowse.url: %s\n", str)
 
     return 0

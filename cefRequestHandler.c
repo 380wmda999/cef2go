@@ -175,7 +175,7 @@ char * cef_request_get_url(struct _cef_request_t * self) {
     cef_string_t * str = self->get_url(self);
     cef_string_utf8_t output;
     output.dtor = ignoreDelete; // ignore delete, because go will delete it when its done
-    output.str = calloc(str->length, sizeof(char));
+    output.str = malloc(str->length * sizeof(char));
     output.length = str->length;
     cef_string_to_utf8(str->str, str->length, &output);
     cef_string_userfree_free(str);
