@@ -64,6 +64,7 @@ func _InitializeGlobalCStructures() {
     _InitializeGlobalCStructuresBase()
     _InitializeGlobalCStructuresApp()
     _RequestHandler = InitializeRequestHandler()
+    _LifeSpanHandler = InitializeLifeSpanHandler()
     _ClientHandler = InitializeHandler()
 }
 
@@ -173,7 +174,7 @@ func Initialize(settings Settings) int {
 }
 
 func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings,
-        url string) {
+        url string) bool {
     Logger.Println("CreateBrowser, url=", url)
 
     // Initialize cef_window_info_t structure.
@@ -206,13 +207,14 @@ func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings,
     // will first guess the CEF window handle using for example
     // WinAPI functions and then search the global map of cef
     // browser objects.
-    C.cef_browser_host_create_browser(
+    result := C.cef_browser_host_create_browser(
         windowInfo,
         _ClientHandler,
         cefUrl,
         cefBrowserSettings,
         nil,
     )
+    return result == C.int(1)
 }
 
 func RunMessageLoop() {

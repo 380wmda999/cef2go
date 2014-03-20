@@ -68,7 +68,7 @@ func go_GetKeyboardHandler(self *C.struct__cef_client_t) *C.struct__cef_keyboard
 
 //export go_GetLifespanHandler
 func go_GetLifespanHandler(self *C.struct__cef_client_t) *C.struct__cef_life_span_handler_t {
-    return nil
+    return _LifeSpanHandler
 }
 
 //export go_GetLoadHandler

@@ -23,14 +23,10 @@ int cef_request_t_is_read_only(struct _cef_request_t * self) {
 }
 
 void cef_request_t_set_url(struct _cef_request_t * self, char * url) {
-    cef_string_t output;
-    output.str = NULL;
-    output.length = 0;
-    output.dtor = NULL;
-
-    cef_string_from_utf8(url, strlen(url), &output);
-
-    self->set_url(self, &output);
+    cef_string_t * output = cef_string_userfree_utf16_alloc();
+    cef_string_from_utf8(url, strlen(url), output);
+    self->set_url(self, output);
+    cef_string_userfree_utf16_free(output);
 }
 
 cef_string_utf8_t* cef_request_t_get_method(struct _cef_request_t * self) {
@@ -41,14 +37,10 @@ cef_string_utf8_t* cef_request_t_get_method(struct _cef_request_t * self) {
 }
 
 void cef_request_t_set_method(struct _cef_request_t * self, char * meth){
-    cef_string_t output;
-    output.str = NULL;
-    output.length = 0;
-    output.dtor = NULL;
-
-    cef_string_from_utf8(meth, strlen(meth), &output);
-
-    self->set_url(self, &output);
+    cef_string_t * output = cef_string_userfree_utf16_alloc();
+    cef_string_from_utf8(meth, strlen(meth), output);
+    self->set_method(self, output);
+    cef_string_userfree_utf16_free(output);
 }
 
 struct _cef_post_data_t * cef_request_t_get_post_data(struct _cef_request_t * self) {

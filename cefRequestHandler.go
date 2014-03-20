@@ -16,7 +16,18 @@ import (
     //"fmt"
 )
 
+// Wraps the callbacks done to _cef_request_handler_t (partial implementation of callbacks)
+type RequestHandler interface {
+    /** Triggered before browsing to page. Return 1 to cancel transition. 0 to continue. */
+    OnBeforeBrowse(browser CefBrowserT, request CefRequestT, isRedirect int) int
+    OnBeforeResourceLoad(browser CefBrowserT, request CefRequestT) int
+}
+
+
 var _RequestHandler *C.struct__cef_request_handler_t // requires reference counting
+var globalRequestHandler RequestHandler
+
+
 
 
 //export go_OnBeforeBrowse
@@ -27,17 +38,14 @@ func go_OnBeforeBrowse(
     request *C.struct__cef_request_t,
     is_redirect int) int {
 
-    //requestT := CefRequestT{request}
-    //fmt.Println("-----")
-    //fmt.Printf("--getUrl: %s\n", requestT.GetUrl())
-    //fmt.Printf("--getIsReadOnly: %t\n", requestT.IsReadOnly())
-    //fmt.Printf("--GetMethod: %s\n", requestT.GetMethod())
-    //fmt.Printf("--GetPostData: %p\n", requestT.GetPostData().CStruct)
-    //fmt.Printf("--GetFlags: %x\n", requestT.GetFlags())
-    //fmt.Printf("--GetFirstPartyForCookies: %s\n", requestT.GetFirstPartyForCookies())
-    //fmt.Printf("--GetResourceType: %d\n", requestT.GetResourceType())
-    //fmt.Printf("--GetTransitionType: %d\n", requestT.GetTransitionType())
-    //fmt.Printf("--GetHeaderMap: %v", requestT.GetHeaderMap())
+    if globalRequestHandler != nil {
+        return globalRequestHandler.OnBeforeBrowse(
+            CefBrowserT{browser},
+            CefRequestT{request},
+            is_redirect,
+        )
+    }
+
     return 0
 }
 
@@ -47,6 +55,14 @@ func go_OnBeforeResourceLoad(
     browser *C.struct__cef_browser_t,
     frame *C.struct__cef_frame_t,
     request *C.struct__cef_request_t) int {
+
+    if globalRequestHandler != nil {
+        return globalRequestHandler.OnBeforeResourceLoad(
+            CefBrowserT{browser},
+            CefRequestT{request},
+        )
+    }
+
     return 0
 }
 
@@ -56,6 +72,7 @@ func go_GetResourceHandler(
         browser *C.struct__cef_browser_t,
         frame *C.struct__cef_frame_t,
         request *C.struct__cef_request_t) *C.struct__cef_resource_handler_t {
+
     return nil
 }
 
@@ -147,4 +164,8 @@ func InitializeRequestHandler() *C.struct__cef_request_handler_t {
             C.calloc(1, C.sizeof_struct__cef_request_handler_t))
     C.initialize_request_handler(handler)
     return handler
+}
+
+func SetRequestHandler(reqHandler RequestHandler) {
+    globalRequestHandler = reqHandler
 }
