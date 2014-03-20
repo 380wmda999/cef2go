@@ -1,6 +1,7 @@
 // Copyright (c) 2014 The cef2go authors. All rights reserved.
 // License: BSD 3-clause.
 // Website: https://github.com/CzarekTomczak/cef2go
+// Website: https://github.com/fromkeith/cef2go
 
 package cef2go
 
@@ -21,12 +22,11 @@ CEF capi fixes
 */
 
 /*
-#cgo CFLAGS: -I.
 #include <stdlib.h>
-#include "string.h"
+#include <string.h>
 #include "include/capi/cef_app_capi.h"
-#include "handlers/cef_app.h"
-#include "handlers/cef_client.h"
+#include "include/capi/cef_client_capi.h"
+
 */
 import "C"
 import "unsafe"
@@ -38,9 +38,6 @@ import (
 
 var Logger *log.Logger = log.New(os.Stdout, "[cef] ", log.Lshortfile)
 
-var _MainArgs *C.struct__cef_main_args_t
-var _AppHandler *C.cef_app_t // requires reference counting
-var _ClientHandler *C.struct__cef_client_t // requires reference counting
 
 // Sandbox is disabled. Including the "cef_sandbox.lib"
 // library results in lots of GCC warnings/errors. It is
@@ -63,31 +60,16 @@ type Settings struct {
 type BrowserSettings struct {
 }
 
-const (
-    LOGSEVERITY_DEFAULT = C.LOGSEVERITY_DEFAULT
-    LOGSEVERITY_VERBOSE = C.LOGSEVERITY_VERBOSE
-    LOGSEVERITY_INFO = C.LOGSEVERITY_INFO
-    LOGSEVERITY_WARNING = C.LOGSEVERITY_WARNING
-    LOGSEVERITY_ERROR = C.LOGSEVERITY_ERROR
-    LOGSEVERITY_ERROR_REPORT = C.LOGSEVERITY_ERROR_REPORT
-    LOGSEVERITY_DISABLE = C.LOGSEVERITY_DISABLE
-)
+func _InitializeGlobalCStructures() {
+    _InitializeGlobalCStructuresBase()
+    _InitializeGlobalCStructuresApp()
+    _RequestHandler = InitializeRequestHandler()
+    _ClientHandler = InitializeHandler()
+}
+
 
 func SetLogger(logger *log.Logger) {
     Logger = logger
-}
-
-func _InitializeGlobalCStructures() {
-    _MainArgs = (*C.struct__cef_main_args_t)(
-            C.calloc(1, C.sizeof_struct__cef_main_args_t))
-
-    _AppHandler = (*C.cef_app_t)(
-            C.calloc(1, C.sizeof_cef_app_t))
-    C.initialize_app_handler(_AppHandler)
-
-    _ClientHandler = (*C.struct__cef_client_t)(
-            C.calloc(1, C.sizeof_struct__cef_client_t))
-    C.initialize_client_handler(_ClientHandler)
 }
 
 func ExecuteProcess(appHandle unsafe.Pointer) int {
@@ -190,7 +172,7 @@ func Initialize(settings Settings) int {
     return int(ret)
 }
 
-func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings, 
+func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings,
         url string) {
     Logger.Println("CreateBrowser, url=", url)
 
@@ -199,7 +181,7 @@ func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings,
     windowInfo = (*C.cef_window_info_t)(
             C.calloc(1, C.sizeof_cef_window_info_t))
     FillWindowInfo(windowInfo, hwnd)
-    
+
     // url
     var cefUrl *C.cef_string_t
     cefUrl = (*C.cef_string_t)(
@@ -213,8 +195,8 @@ func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings,
     cefBrowserSettings = (*C.struct__cef_browser_settings_t)(
             C.calloc(1, C.sizeof_struct__cef_browser_settings_t))
     cefBrowserSettings.size = C.sizeof_struct__cef_browser_settings_t
-    
-    // Do not create the browser synchronously using the 
+
+    // Do not create the browser synchronously using the
     // cef_browser_host_create_browser_sync() function, as
     // it is unreliable. Instead obtain browser object in
     // life_span_handler::on_after_created. In that callback
@@ -224,8 +206,13 @@ func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings,
     // will first guess the CEF window handle using for example
     // WinAPI functions and then search the global map of cef
     // browser objects.
-    C.cef_browser_host_create_browser(windowInfo, _ClientHandler, cefUrl,
-            cefBrowserSettings, nil)
+    C.cef_browser_host_create_browser(
+        windowInfo,
+        _ClientHandler,
+        cefUrl,
+        cefBrowserSettings,
+        nil,
+    )
 }
 
 func RunMessageLoop() {

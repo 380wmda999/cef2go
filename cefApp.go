@@ -1,0 +1,23 @@
+// Copyright (c) 2014 The cef2go authors. All rights reserved.
+// License: BSD 3-clause.
+// Website: https://github.com/CzarekTomczak/cef2go
+// Website: https://github.com/fromkeith/cef2go
+
+package cef2go
+
+
+
+/*
+#include "include/capi/cef_app_capi.h"
+extern void initialize_app_handler(cef_app_t* app);
+*/
+import "C"
+var _AppHandler *C.cef_app_t // requires reference counting
+
+
+func _InitializeGlobalCStructuresApp() {
+
+    _AppHandler = (*C.cef_app_t)(
+           C.calloc(1, C.sizeof_cef_app_t))
+    C.initialize_app_handler(_AppHandler)
+}

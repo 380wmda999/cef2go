@@ -2,9 +2,7 @@
 // License: BSD 3-clause.
 // Website: https://github.com/CzarekTomczak/cefcapi
 
-#pragma once
-
-#include "handlers/cef_base.h"
+#include "cefBase.h"
 #include "include/capi/cef_app_capi.h"
 
 // ----------------------------------------------------------------------------
