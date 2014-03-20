@@ -1,3 +1,8 @@
+// Copyright (c) 2014 The cefcapi authors. All rights reserved.
+// License: BSD 3-clause.
+// Website: https://github.com/CzarekTomczak/cefcapi
+// Website: https://github.com/fromkeith/cefcapi
+
 #ifndef CEF_BASE_H
 #define CEF_BASE_H
 
@@ -15,7 +20,6 @@
 #define DEBUG_CALLBACK(x) { static int first_call = 1; if (first_call == 1) { first_call = 0; printf(x); } }
 
 
-void ignoreDelete (char * str);
 cef_string_utf8_t * cefStringToUtf8(cef_string_t * source);
 
 int CEF_CALLBACK add_ref(cef_base_t* self);
