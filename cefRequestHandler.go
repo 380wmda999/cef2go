@@ -13,7 +13,7 @@ extern char * cef_request_get_url(struct _cef_request_t * self);
 import "C"
 import (
     "unsafe"
-    //"fmt"
+    "fmt"
 )
 
 var _RequestHandler *C.struct__cef_request_handler_t // requires reference counting
