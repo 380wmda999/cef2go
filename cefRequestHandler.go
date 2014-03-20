@@ -7,13 +7,13 @@ package cef2go
 #include <stdlib.h>
 #include "include/capi/cef_client_capi.h"
 #include "include/capi/cef_request_handler_capi.h"
+
 extern void initialize_request_handler(struct _cef_request_handler_t * requestHandler);
-extern char * cef_request_get_url(struct _cef_request_t * self);
 */
 import "C"
 import (
     "unsafe"
-    "fmt"
+    //"fmt"
 )
 
 var _RequestHandler *C.struct__cef_request_handler_t // requires reference counting
@@ -27,12 +27,17 @@ func go_OnBeforeBrowse(
     request *C.struct__cef_request_t,
     is_redirect int) int {
 
-    cString := C.cef_request_get_url(request)
-    fmt.Printf("go_OnBeforeBrowse: %p\n", cString)
-    str := C.GoString(cString)
-    //defer C.free(unsafe.Pointer(cString))
-    fmt.Printf("go_OnBeforeBrowse.url: %s\n", str)
-
+    //requestT := CefRequestT{request}
+    //fmt.Println("-----")
+    //fmt.Printf("--getUrl: %s\n", requestT.GetUrl())
+    //fmt.Printf("--getIsReadOnly: %t\n", requestT.IsReadOnly())
+    //fmt.Printf("--GetMethod: %s\n", requestT.GetMethod())
+    //fmt.Printf("--GetPostData: %p\n", requestT.GetPostData().CStruct)
+    //fmt.Printf("--GetFlags: %x\n", requestT.GetFlags())
+    //fmt.Printf("--GetFirstPartyForCookies: %s\n", requestT.GetFirstPartyForCookies())
+    //fmt.Printf("--GetResourceType: %d\n", requestT.GetResourceType())
+    //fmt.Printf("--GetTransitionType: %d\n", requestT.GetTransitionType())
+    //fmt.Printf("--GetHeaderMap: %v", requestT.GetHeaderMap())
     return 0
 }
 

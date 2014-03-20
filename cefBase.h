@@ -15,6 +15,9 @@
 #define DEBUG_CALLBACK(x) { static int first_call = 1; if (first_call == 1) { first_call = 0; printf(x); } }
 
 
+void ignoreDelete (char * str);
+cef_string_utf8_t * cefStringToUtf8(cef_string_t * source);
+
 int CEF_CALLBACK add_ref(cef_base_t* self);
 int CEF_CALLBACK release(cef_base_t* self);
 int CEF_CALLBACK get_refct(cef_base_t* self);

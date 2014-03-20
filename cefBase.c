@@ -3,7 +3,7 @@
 // Website: https://github.com/CzarekTomczak/cefcapi
 
 #include "cefBase.h"
-
+#include <string.h>
 
 // ----------------------------------------------------------------------------
 // cef_base_t
@@ -60,4 +60,16 @@ void initialize_cef_base(cef_base_t* base) {
     base->add_ref = add_ref;
     base->release = release;
     base->get_refct = get_refct;
+}
+
+//
+// other base/shared items
+//
+
+
+// returns a utf8 encoded string that you need to delete
+cef_string_utf8_t * cefStringToUtf8(cef_string_t * source) {
+    cef_string_utf8_t * output = cef_string_userfree_utf8_alloc();
+    cef_string_to_utf8(source->str, source->length, output);
+    return output;
 }
