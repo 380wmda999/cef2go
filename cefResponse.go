@@ -30,6 +30,14 @@ type CefResponseT struct {
     CStruct         *C.struct__cef_response_t
 }
 
+func (b CefResponseT) Release() {
+    C.releaseVoid(unsafe.Pointer(b.CStruct))
+}
+
+func (b CefResponseT) AddRef() {
+    C.add_refVoid(unsafe.Pointer(b.CStruct))
+}
+
 
 func (r CefResponseT) IsReadOnly() bool {
     return C.cef_response_t_is_read_only(r.CStruct) == C.int(1)

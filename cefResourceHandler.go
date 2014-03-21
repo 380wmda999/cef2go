@@ -165,7 +165,7 @@ func CreateResourceHandler(resHandler ResourceHandler) CefResourceHandlerT {
     handler.CStruct = (*C.struct__cef_resource_handler_t)(
             C.calloc(1, C.sizeof_struct__cef_resource_handler_t))
     C.intialize_cef_resource_handler(handler.CStruct)
-
+    go_AddRef(unsafe.Pointer(handler.CStruct))
     handlerMap[handler.CStruct] = handler
 
     return handler

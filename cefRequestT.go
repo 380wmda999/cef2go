@@ -39,6 +39,15 @@ type CefPostDataT struct {
     CStruct *C.struct__cef_post_data_t
 }
 
+func (b CefRequestT) Release() {
+    C.releaseVoid(unsafe.Pointer(b.CStruct))
+}
+
+func (b CefRequestT) AddRef() {
+    C.add_refVoid(unsafe.Pointer(b.CStruct))
+}
+
+
 
 func (r CefRequestT) GetUrl() string {
     stringStruct := C.cef_request_t_get_url(r.CStruct)

@@ -15,6 +15,7 @@ import "C"
 
 import (
 //    "fmt"
+    "unsafe"
 )
 
 
@@ -68,6 +69,7 @@ func go_GetKeyboardHandler(self *C.struct__cef_client_t) *C.struct__cef_keyboard
 
 //export go_GetLifespanHandler
 func go_GetLifespanHandler(self *C.struct__cef_client_t) *C.struct__cef_life_span_handler_t {
+    go_AddRef(unsafe.Pointer(_LifeSpanHandler))
     return _LifeSpanHandler
 }
 
@@ -83,6 +85,7 @@ func go_GetRenderHandler(self *C.struct__cef_client_t) *C.struct__cef_render_han
 
 //export go_GetRequestHandler
 func go_GetRequestHandler(self *C.struct__cef_client_t) *C.struct__cef_request_handler_t {
+    go_AddRef(unsafe.Pointer(_RequestHandler))
     return _RequestHandler
 }
 
@@ -93,6 +96,8 @@ func InitializeHandler() *C.struct__cef_client_t {
     handler = (*C.struct__cef_client_t)(
             C.calloc(1, C.sizeof_struct__cef_client_t))
     C.initialize_client_handler(handler)
+    go_AddRef(unsafe.Pointer(handler))
+    Logger.Println("_ClientHandler: ", unsafe.Pointer(handler))
     return handler
 }
 

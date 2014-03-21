@@ -3,6 +3,9 @@
 // Website: https://github.com/CzarekTomczak/cefcapi
 // Website: https://github.com/fromkeith/cefcapi
 
+
+#include "_cgo_export.h"
+
 #include "cefBase.h"
 #include <string.h>
 
@@ -19,10 +22,11 @@
 // Increment the reference count.
 ///
 int CEF_CALLBACK add_ref(cef_base_t* self) {
-    DEBUG_CALLBACK("cef_base_t.add_ref\n");
-    if (DEBUG_REFERENCE_COUNTING)
-        printf("+");
-    return 1;
+    //DEBUG_CALLBACK("cef_base_t.add_ref\n");
+    //if (DEBUG_REFERENCE_COUNTING)
+    //    printf("+");
+    //return 1;
+    return go_AddRef((void *) self);
 }
 
 ///
@@ -30,20 +34,29 @@ int CEF_CALLBACK add_ref(cef_base_t* self) {
 // remain.
 ///
 int CEF_CALLBACK release(cef_base_t* self) {
-    DEBUG_CALLBACK("cef_base_t.release\n");
-    if (DEBUG_REFERENCE_COUNTING)
-        printf("-");
-    return 1;
+    //DEBUG_CALLBACK("cef_base_t.release\n");
+    //if (DEBUG_REFERENCE_COUNTING)
+    //    printf("-");
+    //return 1;
+    return go_Release((void *) self);
 }
 
 ///
 // Returns the current number of references.
 ///
 int CEF_CALLBACK get_refct(cef_base_t* self) {
-    DEBUG_CALLBACK("cef_base_t.get_refct\n");
-    if (DEBUG_REFERENCE_COUNTING)
-        printf("=");
-    return 1;
+    //DEBUG_CALLBACK("cef_base_t.get_refct\n");
+    //if (DEBUG_REFERENCE_COUNTING)
+    //    printf("=");
+    //return 1;
+    return go_GetRefCount((void *) self);
+}
+
+int add_refVoid(void* self) {
+    ((cef_base_t*) self)->add_ref((cef_base_t*) self);
+}
+int releaseVoid(void* self) {
+    ((cef_base_t*) self)->release((cef_base_t*) self);
 }
 
 void initialize_cef_base(cef_base_t* base) {
@@ -61,6 +74,8 @@ void initialize_cef_base(cef_base_t* base) {
     base->add_ref = add_ref;
     base->release = release;
     base->get_refct = get_refct;
+
+    go_CreateRef((void *) base);
 }
 
 //

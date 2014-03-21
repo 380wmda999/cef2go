@@ -14,10 +14,24 @@ extern void cef_callback_t_cancel(struct _cef_callback_t* self);
 */
 import "C"
 
+import (
+    "unsafe"
+)
 
 type CefCallbackT struct {
     CStruct         *C.struct__cef_callback_t
 }
+
+
+
+func (b CefCallbackT) Release() {
+    C.releaseVoid(unsafe.Pointer(b.CStruct))
+}
+
+func (b CefCallbackT) AddRef() {
+    C.add_refVoid(unsafe.Pointer(b.CStruct))
+}
+
 
 // continue processing
 func (c CefCallbackT) Cont() {

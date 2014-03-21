@@ -26,4 +26,7 @@ int CEF_CALLBACK add_ref(cef_base_t* self);
 int CEF_CALLBACK release(cef_base_t* self);
 int CEF_CALLBACK get_refct(cef_base_t* self);
 
+int add_refVoid(void* self);
+int releaseVoid(void* self);
+
 #endif

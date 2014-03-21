@@ -167,6 +167,8 @@ func InitializeRequestHandler() *C.struct__cef_request_handler_t {
     handler = (*C.struct__cef_request_handler_t)(
             C.calloc(1, C.sizeof_struct__cef_request_handler_t))
     C.initialize_request_handler(handler)
+    go_AddRef(unsafe.Pointer(handler))
+    Logger.Println("_RequestHandler: ", unsafe.Pointer(handler))
     return handler
 }
 

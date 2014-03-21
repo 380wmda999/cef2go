@@ -78,7 +78,8 @@ struct _cef_render_process_handler_t*
 void initialize_app_handler(cef_app_t* app) {
     printf("initialize_app_handler\n");
     app->base.size = sizeof(cef_app_t);
-    initialize_cef_base((cef_base_t*)app);
+    initialize_cef_base((cef_base_t*) app);
+    go_AddRef((cef_base_t*) app);
     // callbacks
     app->on_before_command_line_processing = on_before_command_line_processing;
     app->on_register_custom_schemes = on_register_custom_schemes;

@@ -13,6 +13,10 @@ extern void initialize_life_span_handler(struct _cef_life_span_handler_t* lifeHa
 */
 import "C"
 
+import (
+    "unsafe"
+)
+
 
 type LifeSpanHandler interface {
     OnAfterCreated(browser CefBrowserT)
@@ -37,6 +41,13 @@ func go_OnBeforePopup(
         client ** C.struct__cef_client_t,
         settings * C.struct__cef_browser_settings_t,
         no_javascript_access * C.int) int {
+
+    C.releaseVoid(unsafe.Pointer(browser))
+    C.releaseVoid(unsafe.Pointer(frame))
+    C.releaseVoid(unsafe.Pointer(popupFeatures))
+    C.releaseVoid(unsafe.Pointer(windowInfo))
+    //C.releaseVoid(unsafe.Pointer(client))
+    C.releaseVoid(unsafe.Pointer(settings))
     return 1
 }
 
@@ -46,6 +57,8 @@ func go_OnAfterCreated(
         browser *C.struct__cef_browser_t) {
     if globalLifespanHandler != nil {
         globalLifespanHandler.OnAfterCreated(CefBrowserT{browser})
+    } else {
+        C.releaseVoid(unsafe.Pointer(browser))
     }
 }
 
@@ -55,6 +68,8 @@ func go_RunModal(
         browser *C.struct__cef_browser_t) int {
     if globalLifespanHandler != nil {
         return globalLifespanHandler.RunModal(CefBrowserT{browser})
+    } else {
+        C.releaseVoid(unsafe.Pointer(browser))
     }
     return 0
 }
@@ -65,6 +80,8 @@ func go_DoClose(
         browser *C.struct__cef_browser_t) int {
     if globalLifespanHandler != nil {
         globalLifespanHandler.DoClose(CefBrowserT{browser})
+    } else {
+        C.releaseVoid(unsafe.Pointer(browser))
     }
     return 0
 }
@@ -75,6 +92,8 @@ func go_BeforeClose(
         browser *C.struct__cef_browser_t) {
     if globalLifespanHandler != nil {
         globalLifespanHandler.BeforeClose(CefBrowserT{browser})
+    } else {
+        C.releaseVoid(unsafe.Pointer(browser))
     }
 }
 
@@ -85,6 +104,8 @@ func InitializeLifeSpanHandler() *C.struct__cef_life_span_handler_t {
     handler = (*C.struct__cef_life_span_handler_t)(
             C.calloc(1, C.sizeof_struct__cef_life_span_handler_t))
     C.initialize_life_span_handler(handler)
+    go_AddRef(unsafe.Pointer(handler))
+    Logger.Println("_LifespanHandler: ", unsafe.Pointer(handler))
     return handler
 }
 

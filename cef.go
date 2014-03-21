@@ -83,7 +83,9 @@ func ExecuteProcess(appHandle unsafe.Pointer) int {
     // Sandbox info needs to be passed to both cef_execute_process()
     // and cef_initialize().
     // OFF: _SandboxInfo = C.cef_sandbox_info_create()
-
+    go_AddRef(unsafe.Pointer(_MainArgs))
+    go_AddRef(unsafe.Pointer(_AppHandler))
+    go_AddRef(unsafe.Pointer(_SandboxInfo))
     var exitCode C.int = C.cef_execute_process(_MainArgs, _AppHandler,
             _SandboxInfo)
     if (exitCode >= 0) {
@@ -170,6 +172,9 @@ func Initialize(settings Settings) int {
     // ----------
     cefSettings.no_sandbox = C.int(1)
 
+    go_AddRef(unsafe.Pointer(_MainArgs))
+    go_AddRef(unsafe.Pointer(_AppHandler))
+    go_AddRef(unsafe.Pointer(_SandboxInfo))
     ret := C.cef_initialize(_MainArgs, cefSettings, _AppHandler, _SandboxInfo)
     return int(ret)
 }
@@ -208,6 +213,7 @@ func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings,
     // will first guess the CEF window handle using for example
     // WinAPI functions and then search the global map of cef
     // browser objects.
+    go_AddRef(unsafe.Pointer(_ClientHandler))
     result := C.cef_browser_host_create_browser(
         windowInfo,
         _ClientHandler,

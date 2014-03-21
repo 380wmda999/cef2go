@@ -12,7 +12,10 @@ package cef2go
 extern void initialize_app_handler(cef_app_t* app);
 */
 import "C"
-var _AppHandler *C.cef_app_t // requires reference counting
+
+import "unsafe"
+
+var _AppHandler *C.cef_app_t
 
 
 func _InitializeGlobalCStructuresApp() {
@@ -20,4 +23,5 @@ func _InitializeGlobalCStructuresApp() {
     _AppHandler = (*C.cef_app_t)(
            C.calloc(1, C.sizeof_cef_app_t))
     C.initialize_app_handler(_AppHandler)
+    Logger.Println("_AppHandler: ", unsafe.Pointer(_AppHandler))
 }

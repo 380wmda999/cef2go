@@ -60,7 +60,13 @@ type CefDomVisitorT struct {
     CStruct         *C.struct__cef_domvisitor_t
 }
 
+func (b CefFrameT) Release() {
+    C.releaseVoid(unsafe.Pointer(b.CStruct))
+}
 
+func (b CefFrameT) AddRef() {
+    C.add_refVoid(unsafe.Pointer(b.CStruct))
+}
 
 
 

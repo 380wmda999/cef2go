@@ -79,6 +79,7 @@ type CefRectT struct {
     CStruct     *C.cef_rect_t
 }
 
+
 func (b CefBrowserHostT) GetBrowser() CefBrowserT {
     return CefBrowserT{C.cef_browser_host_t_get_browser(b.CStruct)}
 }
