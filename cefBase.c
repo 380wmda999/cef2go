@@ -69,7 +69,7 @@ void initialize_cef_base(cef_base_t* base) {
 
 
 // returns a utf8 encoded string that you need to delete
-cef_string_utf8_t * cefStringToUtf8(cef_string_t * source) {
+cef_string_utf8_t * cefStringToUtf8(const cef_string_t * source) {
     cef_string_utf8_t * output = cef_string_userfree_utf8_alloc();
     cef_string_to_utf8(source->str, source->length, output);
     return output;

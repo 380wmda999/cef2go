@@ -1,3 +1,7 @@
+// Copyright (c) 2014 The cef2go authors. All rights reserved.
+// License: BSD 3-clause.
+// Website: https://github.com/fromkeith/cef2go
+
 package cef2go
 
 
@@ -13,7 +17,7 @@ extern void initialize_request_handler(struct _cef_request_handler_t * requestHa
 import "C"
 import (
     "unsafe"
-    //"fmt"
+    "fmt"
 )
 
 // Wraps the callbacks done to _cef_request_handler_t (partial implementation of callbacks)
@@ -116,7 +120,7 @@ func go_OnProtocolExecution(
     browser *C.struct__cef_browser_t,
     url *C.char,
     allow_os_execution unsafe.Pointer) {
-
+    fmt.Println("go_OnProtocolExecution!!!!!")
 }
 
 

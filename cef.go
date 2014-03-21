@@ -24,6 +24,7 @@ CEF capi fixes
 /*
 #include <stdlib.h>
 #include <string.h>
+#include "cefBase.h"
 #include "include/capi/cef_app_capi.h"
 #include "include/capi/cef_client_capi.h"
 
@@ -231,4 +232,37 @@ func Shutdown() {
     Logger.Println("Shutdown")
     C.cef_shutdown()
     // OFF: cef_sandbox_info_destroy(_SandboxInfo)
+}
+
+
+func extractCefMultiMap(cefMapPointer C.cef_string_multimap_t) map[string][]string {
+    numKeys := C.cef_string_multimap_size(cefMapPointer)
+    goMap := make(map[string][]string)
+    for i := 0; i < int(numKeys); i++ {
+        var key *C.cef_string_t = C.cef_string_userfree_utf16_alloc()
+        C.cef_string_multimap_key(cefMapPointer, C.int(i), key)
+        charKeyUtf8 := C.cefStringToUtf8(key)
+        goKey := C.GoString(charKeyUtf8.str)
+        if _, ok := goMap[goKey]; ok {
+            continue
+        }
+        numValsForKey := C.cef_string_multimap_find_count(cefMapPointer, key)
+
+        if numValsForKey >= 0 {
+            goVals := make([]string, numValsForKey)
+            for k := 0; k < int(numValsForKey); k++ {
+                var val *C.cef_string_t = C.cef_string_userfree_utf16_alloc()
+                C.cef_string_multimap_enumerate(cefMapPointer,
+                    key, C.int(k), val)
+                charValUtf8 := C.cefStringToUtf8(val)
+                goVals[k] = C.GoString(charValUtf8.str)
+                C.cef_string_userfree_utf8_free(charValUtf8)
+                C.cef_string_userfree_utf16_free(val)
+            }
+            goMap[goKey] = goVals
+        }
+        C.cef_string_userfree_utf8_free(charKeyUtf8)
+        C.cef_string_userfree_utf16_free(key)
+    }
+    return goMap
 }
