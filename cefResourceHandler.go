@@ -159,7 +159,7 @@ func go_Cancel(self *C.struct__cef_resource_handler_t) {
 }
 
 
-func createResourceHandler(resHandler ResourceHandler) CefResourceHandlerT {
+func CreateResourceHandler(resHandler ResourceHandler) CefResourceHandlerT {
     var handler CefResourceHandlerT
     handler.resourceHandler = resHandler
     handler.CStruct = (*C.struct__cef_resource_handler_t)(

@@ -18,10 +18,13 @@ import (
     //"fmt"
 )
 
+type SchemeHandlerFactory interface {
+    CreateSchemeHandler(browser CefBrowserT, frame CefFrameT, schemeName string, request CefRequestT) CefResourceHandlerT
+}
 
 type CefSchemeHandlerFactory struct {
     CStruct         *C.struct__cef_scheme_handler_factory_t // memory manage?
-    ResourceHandler     CefResourceHandlerT
+    Factory         SchemeHandlerFactory
 }
 
 var (
@@ -37,18 +40,23 @@ func go_CreateSchemeHandler(
         scheme_name *C.cef_string_utf8_t,
         request *C.struct__cef_request_t) *C.struct__cef_resource_handler_t {
 
+    schemeName := C.GoString(scheme_name.str)
     defer C.cef_string_userfree_utf8_free(scheme_name)
 
     if handler, ok := schemeHandlerMap[self]; ok {
-        return handler.ResourceHandler.CStruct;
+        return handler.Factory.CreateSchemeHandler(
+            CefBrowserT{browser},
+            CefFrameT{frame},
+            schemeName,
+            CefRequestT{request},
+        ).CStruct
     }
     return nil
 }
 
-func RegisterCustomScheme(schemeName, domainName string, resHandler ResourceHandler) (int, CefSchemeHandlerFactory) {
+func RegisterCustomScheme(schemeName, domainName string, schemeHandler SchemeHandlerFactory) (int, CefSchemeHandlerFactory) {
     var handler CefSchemeHandlerFactory
-
-    handler.ResourceHandler = createResourceHandler(resHandler)
+    handler.Factory = schemeHandler
 
     handler.CStruct = (*C.struct__cef_scheme_handler_factory_t)(
             C.calloc(1, C.sizeof_struct__cef_scheme_handler_factory_t))
