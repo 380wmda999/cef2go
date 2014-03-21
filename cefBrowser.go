@@ -46,9 +46,6 @@ type CefBrowserT struct {
     CStruct     *C.struct__cef_browser_t
 }
 
-type CefFrameT struct {
-    CStruct     *C.struct__cef_frame_t
-}
 
 func (b CefBrowserT) GetHost() CefBrowserHostT {
     hostStruct := C.cef_browser_t_get_host(b.CStruct)
