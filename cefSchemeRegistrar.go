@@ -28,7 +28,7 @@ type CefSchemeHandlerFactory struct {
 }
 
 var (
-    schemeHandlerMap = make(map[*C.struct__cef_scheme_handler_factory_t]CefSchemeHandlerFactory)
+    schemeHandlerMap = make(map[unsafe.Pointer]CefSchemeHandlerFactory)
 )
 
 
@@ -43,7 +43,7 @@ func go_CreateSchemeHandler(
     schemeName := C.GoString(scheme_name.str)
     defer C.cef_string_userfree_utf8_free(scheme_name)
 
-    if handler, ok := schemeHandlerMap[self]; ok {
+    if handler, ok := schemeHandlerMap[unsafe.Pointer(self)]; ok {
         return handler.Factory.CreateSchemeHandler(
             CefBrowserT{browser},
             CefFrameT{frame},
@@ -54,6 +54,11 @@ func go_CreateSchemeHandler(
     return nil
 }
 
+func deleteCustomScheme(it unsafe.Pointer) {
+    // delete it from our map
+    delete(schemeHandlerMap, it)
+}
+
 func RegisterCustomScheme(schemeName, domainName string, schemeHandler SchemeHandlerFactory) (int, CefSchemeHandlerFactory) {
     var handler CefSchemeHandlerFactory
     handler.Factory = schemeHandler
@@ -61,6 +66,7 @@ func RegisterCustomScheme(schemeName, domainName string, schemeHandler SchemeHan
     handler.CStruct = (*C.struct__cef_scheme_handler_factory_t)(
             C.calloc(1, C.sizeof_struct__cef_scheme_handler_factory_t))
     C.intialize_cef_scheme_handler_factory(handler.CStruct)
+    RegisterDestructor(unsafe.Pointer(handler.CStruct), deleteCustomScheme)
 
     schemeNameCs := C.CString(schemeName)
     defer C.free(unsafe.Pointer(schemeNameCs))
@@ -70,7 +76,7 @@ func RegisterCustomScheme(schemeName, domainName string, schemeHandler SchemeHan
 
     retCode := C.cef_scheme_handler_register(schemeNameCs, domainNameCs, handler.CStruct)
 
-    schemeHandlerMap[handler.CStruct] = handler
+    schemeHandlerMap[unsafe.Pointer(handler.CStruct)] = handler
 
     return int(retCode), handler
 }

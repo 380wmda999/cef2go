@@ -70,7 +70,7 @@ type ResourceHandler interface {
 }
 
 var (
-    handlerMap = make(map[*C.struct__cef_resource_handler_t]CefResourceHandlerT)
+    handlerMap = make(map[unsafe.Pointer]CefResourceHandlerT)
 )
 
 
@@ -80,7 +80,7 @@ func go_ProcessRequest(
     request *C.struct__cef_request_t,
     callback *C.struct__cef_callback_t) int {
 
-    if handler, ok := handlerMap[self]; ok {
+    if handler, ok := handlerMap[unsafe.Pointer(self)]; ok {
         return handler.resourceHandler.ProcessRequest(
             CefRequestT{request},
             CefCallbackT{callback},
@@ -96,7 +96,7 @@ func go_GetResponseHeaders(
   response *C.struct__cef_response_t,
   response_length *C.int64) {
 
-    if handler, ok := handlerMap[self]; ok {
+    if handler, ok := handlerMap[unsafe.Pointer(self)]; ok {
         *response_length = C.int64(handler.resourceHandler.GetResponseHeaders(
             CefResponseT{response},
         ))
@@ -115,7 +115,7 @@ func go_ReadResponse(
     callback *C.struct__cef_callback_t) int {
 
 
-    if handler, ok := handlerMap[self]; ok {
+    if handler, ok := handlerMap[unsafe.Pointer(self)]; ok {
         dataOut, bytesRead, result := handler.resourceHandler.ReadResponse(
             int(bytes_to_read),
             CefCallbackT{callback},
@@ -135,7 +135,7 @@ func go_ReadResponse(
 func go_GetCookie(
     self *C.struct__cef_resource_handler_t,
     constCookie *C.struct__cef_cookie_t) int {
-    if handler, ok := handlerMap[self]; ok {
+    if handler, ok := handlerMap[unsafe.Pointer(self)]; ok {
         return handler.resourceHandler.GetCookie(CefCookieT{constCookie})
     }
     return 0
@@ -146,7 +146,7 @@ func go_SetCookie(
     self *C.struct__cef_resource_handler_t,
     constCookie *C.struct__cef_cookie_t) int {
 
-    if handler, ok := handlerMap[self]; ok {
+    if handler, ok := handlerMap[unsafe.Pointer(self)]; ok {
         return handler.resourceHandler.SetCookie(CefCookieT{constCookie})
     }
 
@@ -158,6 +158,11 @@ func go_Cancel(self *C.struct__cef_resource_handler_t) {
 
 }
 
+func deleteResourceHandler(it unsafe.Pointer) {
+    // delete it from our map
+    delete(handlerMap, it)
+}
+
 
 func CreateResourceHandler(resHandler ResourceHandler) CefResourceHandlerT {
     var handler CefResourceHandlerT
@@ -165,8 +170,11 @@ func CreateResourceHandler(resHandler ResourceHandler) CefResourceHandlerT {
     handler.CStruct = (*C.struct__cef_resource_handler_t)(
             C.calloc(1, C.sizeof_struct__cef_resource_handler_t))
     C.intialize_cef_resource_handler(handler.CStruct)
-    go_AddRef(unsafe.Pointer(handler.CStruct))
-    handlerMap[handler.CStruct] = handler
+    unsafeIt := unsafe.Pointer(handler.CStruct)
+    go_AddRef(unsafeIt)
+    handlerMap[unsafeIt] = handler
+    // register the destructor so we can properly remove it from our internal map
+    RegisterDestructor(unsafeIt, deleteResourceHandler)
 
     return handler
 }

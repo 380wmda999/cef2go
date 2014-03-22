@@ -38,81 +38,89 @@ const (
 //      http://code.google.com/p/chromiumembedded/wiki/UsingTheCAPI
 type MemoryManagedBridge struct {
     Count           int
-    Deconstructor   func()
+    Deconstructor   func(it unsafe.Pointer)
 }
 
 var (
     memoryBridge = make(map[unsafe.Pointer]MemoryManagedBridge)
-    bridgeLock sync.Mutex
+    refCountLock sync.Mutex
 )
 
 //export go_AddRef
 func go_AddRef(it unsafe.Pointer) int {
-    bridgeLock.Lock()
-    defer bridgeLock.Unlock()
+    refCountLock.Lock()
+    defer refCountLock.Unlock()
 
-    itUnsafe := unsafe.Pointer(it)
-    if m, ok := memoryBridge[itUnsafe]; ok {
-        //Logger.Println("Known Ref_Add: ", itUnsafe)
+    if m, ok := memoryBridge[it]; ok {
+        //Logger.Println("Known Ref_Add: ", it)
         m.Count++
-        memoryBridge[itUnsafe] = m
+        memoryBridge[it] = m
         return m.Count
     }
-    Logger.Println("Unknown Ref_Add: ", itUnsafe)
+    Logger.Println("Unknown Ref_Add: ", it)
     return 1
 }
 
 //export go_Release
 func go_Release(it unsafe.Pointer) int {
-    bridgeLock.Lock()
-    defer bridgeLock.Unlock()
+    refCountLock.Lock()
+    defer refCountLock.Unlock()
 
-    itUnsafe := unsafe.Pointer(it)
-    if m, ok := memoryBridge[itUnsafe]; ok {
+    if m, ok := memoryBridge[it]; ok {
         m.Count--
         if m.Count == 0 {
             if m.Deconstructor != nil {
-                m.Deconstructor()
+                m.Deconstructor(it)
             }
-            Logger.Println("Known Ref_Free: ", itUnsafe)
-            C.free(itUnsafe)
-            delete(memoryBridge, itUnsafe)
+            Logger.Println("Known Ref_Free: ", it)
+            C.free(it)
+            delete(memoryBridge, it)
         } else {
-            //Logger.Println("Known Ref_Release: ", itUnsafe)
-            memoryBridge[itUnsafe] = m
+            //Logger.Println("Known Ref_Release: ", it)
+            memoryBridge[it] = m
         }
         return m.Count
     }
-    Logger.Println("Unknown Ref_Release: ", itUnsafe)
+    Logger.Println("Unknown Ref_Release: ", it)
     return 1
 }
 //export go_GetRefCount
 func go_GetRefCount(it unsafe.Pointer) int {
-    bridgeLock.Lock()
-    defer bridgeLock.Unlock()
+    refCountLock.Lock()
+    defer refCountLock.Unlock()
 
-    itUnsafe := unsafe.Pointer(it)
-    if m, ok := memoryBridge[itUnsafe]; ok {
+    if m, ok := memoryBridge[it]; ok {
         return m.Count
     }
-    Logger.Println("Unknown Ref_Count: ", itUnsafe)
+    Logger.Println("Unknown Ref_Count: ", it)
     return 1
 }
 
 //export go_CreateRef
 func go_CreateRef(it unsafe.Pointer) {
-    bridgeLock.Lock()
-    defer bridgeLock.Unlock()
+    refCountLock.Lock()
+    defer refCountLock.Unlock()
 
-    itUnsafe := unsafe.Pointer(it)
-    if _, ok := memoryBridge[itUnsafe]; !ok {
-        Logger.Println("Ref_Create: ", itUnsafe)
+    if _, ok := memoryBridge[it]; !ok {
+        Logger.Println("Ref_Create: ", it)
         var m MemoryManagedBridge
         m.Deconstructor = nil
-        memoryBridge[itUnsafe] = m
+        memoryBridge[it] = m
         return
     }
-    Logger.Println("Ref Already exists Ref_Create: ", itUnsafe)
+    Logger.Println("Ref Already exists Ref_Create: ", it)
+}
+
+func RegisterDestructor(it unsafe.Pointer, decon func(it unsafe.Pointer)) bool {
+    refCountLock.Lock()
+    defer refCountLock.Unlock()
+
+    if m, ok := memoryBridge[it]; ok {
+        m.Deconstructor = decon
+        memoryBridge[it] = m
+        return true
+    }
+    return false
 }
 
 func _InitializeGlobalCStructuresBase() {
