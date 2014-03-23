@@ -51,11 +51,13 @@ var Logger *log.Logger = log.New(os.Stdout, "[cef] ", log.Lshortfile)
 var _SandboxInfo unsafe.Pointer
 
 type Settings struct {
-    CachePath string
-    LogSeverity int
-    LogFile string
-    ResourcesDirPath string
-    LocalesDirPath string
+    CachePath               string
+    LogSeverity             int
+    LogFile                 string
+    ResourcesDirPath        string
+    LocalesDirPath          string
+    RemoteDebuggingPort     int
+    PersistSessionCookies   bool
 }
 
 type BrowserSettings struct {
@@ -167,6 +169,11 @@ func Initialize(settings Settings) int {
     defer C.free(unsafe.Pointer(localesDirPath))
     C.cef_string_from_utf8(localesDirPath, C.strlen(localesDirPath),
             &cefSettings.locales_dir_path)
+
+    if settings.PersistSessionCookies {
+        cefSettings.persist_session_cookies = 1
+    }
+    cefSettings.remote_debugging_port = C.int(settings.RemoteDebuggingPort)
 
     // no_sandbox
     // ----------
