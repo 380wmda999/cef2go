@@ -22,6 +22,7 @@ CEF capi fixes
 */
 
 /*
+#cgo CFLAGS: -I./dependencies
 #include <stdlib.h>
 #include <string.h>
 #include "cefBase.h"
