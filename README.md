@@ -28,8 +28,10 @@ This Fork
 This fork just restructures the source so its easier to 'go get' and get started.
  * It removes copies of 3rd party libraries.
  * This fork has also only been tested on Windows.
- * Wraps some callbacks from CEF
- * Wraps some structures for easier access from Go
+ * Wraps some callbacks from CEF.
+ * Wraps some structures for easier access from Go.
+ * Changes from using log.Logger interface to a more verbose one.
+ * Implements a naive version of the reference counting.
 
 
 
