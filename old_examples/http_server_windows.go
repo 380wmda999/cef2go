@@ -72,7 +72,7 @@ func main() {
     cef.Initialize(settings)
     
     wndproc := syscall.NewCallback(WndProc)
-    Logger.Println("CreateWindow")
+    Logger.Infof("CreateWindow")
     hwnd := wingui.CreateWindow("cef2go example", wndproc)
 
     browserSettings := cef.BrowserSettings{}

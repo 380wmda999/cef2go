@@ -18,7 +18,6 @@ extern void cef_allow_certificate_error_callback_t_cont(struct _cef_allow_certif
 import "C"
 import (
     "unsafe"
-    "fmt"
 )
 
 // Wraps the callbacks done to _cef_request_handler_t (partial implementation of callbacks)
@@ -131,7 +130,7 @@ func go_OnProtocolExecution(
     browser *C.struct__cef_browser_t,
     url *C.char,
     allow_os_execution unsafe.Pointer) {
-    fmt.Println("go_OnProtocolExecution!!!!!")
+    Logger.Infof("go_OnProtocolExecution")
 }
 
 
