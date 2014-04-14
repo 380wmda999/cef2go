@@ -34,7 +34,10 @@ func go_GetDialogHandler(self *C.struct__cef_client_t) *C.struct__cef_dialog_han
 
 //export go_GetDisplayHandler
 func go_GetDisplayHandler(self *C.struct__cef_client_t) *C.struct__cef_display_handler_t {
-    return nil
+    //Logger.Infof("Add ref to displayHandler\n")
+    go_AddRef(unsafe.Pointer(_DisplayHandler))
+    return _DisplayHandler
+    //return nil
 }
 
 //export go_GetDownloadHandler

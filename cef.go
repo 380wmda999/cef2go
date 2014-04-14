@@ -96,6 +96,7 @@ func _InitializeGlobalCStructures() {
     _InitializeGlobalCStructuresApp()
     _RequestHandler = InitializeRequestHandler()
     _LifeSpanHandler = InitializeLifeSpanHandler()
+    _DisplayHandler = InitializeDisplayHandler()
     _ClientHandler = InitializeHandler()
 }
 
@@ -113,6 +114,7 @@ func ExecuteProcess(appHandle unsafe.Pointer) int {
     // Sandbox info needs to be passed to both cef_execute_process()
     // and cef_initialize().
     // OFF: _SandboxInfo = C.cef_sandbox_info_create()
+
     go_AddRef(unsafe.Pointer(_MainArgs))
     go_AddRef(unsafe.Pointer(_AppHandler))
     go_AddRef(unsafe.Pointer(_SandboxInfo))

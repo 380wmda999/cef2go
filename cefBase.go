@@ -124,5 +124,6 @@ func RegisterDestructor(it unsafe.Pointer, decon func(it unsafe.Pointer)) bool {
 func _InitializeGlobalCStructuresBase() {
      _MainArgs = (*C.struct__cef_main_args_t)(
             C.calloc(1, C.sizeof_struct__cef_main_args_t))
+     go_CreateRef(unsafe.Pointer(_MainArgs))
      Logger.Infof("_MainArgs: %x", unsafe.Pointer(_MainArgs))
 }
