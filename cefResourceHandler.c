@@ -44,7 +44,7 @@ void cef_resource_handler_t_cancel(struct _cef_resource_handler_t* self) {
 }
 
 void intialize_cef_resource_handler(struct _cef_resource_handler_t* handler) {
-    DEBUG_CALLBACK("initializeResourceHandler\n");
+    goDebugLog("initializeResourceHandler\n");
     handler->base.size = sizeof(cef_resource_handler_t);
     initialize_cef_base((cef_base_t*) handler);
 

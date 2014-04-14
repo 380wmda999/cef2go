@@ -156,7 +156,7 @@ void CEF_CALLBACK on_render_process_terminated(
 
 
 void initialize_request_handler(struct _cef_request_handler_t * requestHandler) {
-    DEBUG_CALLBACK("initializeRequestHandler\n");
+    goDebugLog("initializeRequestHandler\n");
     requestHandler->base.size = sizeof(cef_request_handler_t);
     initialize_cef_base((cef_base_t*) requestHandler);
     // callbacks

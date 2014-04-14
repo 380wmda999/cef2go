@@ -24,7 +24,6 @@
 
 struct _cef_context_menu_handler_t* CEF_CALLBACK get_context_menu_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_context_menu_handler\n");
     return go_GetContextMenuHandler(self);
 }
 
@@ -34,7 +33,6 @@ struct _cef_context_menu_handler_t* CEF_CALLBACK get_context_menu_handler(
 ///
 struct _cef_dialog_handler_t* CEF_CALLBACK get_dialog_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_dialog_handler\n");
     return go_GetDialogHandler(self);
 }
 
@@ -43,7 +41,6 @@ struct _cef_dialog_handler_t* CEF_CALLBACK get_dialog_handler(
 ///
 struct _cef_display_handler_t* CEF_CALLBACK get_display_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_display_handler\n");
     return go_GetDisplayHandler(self);
 }
 
@@ -53,7 +50,6 @@ struct _cef_display_handler_t* CEF_CALLBACK get_display_handler(
 ///
 struct _cef_download_handler_t* CEF_CALLBACK get_download_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_download_handler\n");
     return go_GetDownloadHandler(self);
 }
 
@@ -62,7 +58,6 @@ struct _cef_download_handler_t* CEF_CALLBACK get_download_handler(
 ///
 struct _cef_drag_handler_t* CEF_CALLBACK get_drag_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_drag_handler\n");
     return go_GetDragHandler(self);
 }
 
@@ -71,7 +66,6 @@ struct _cef_drag_handler_t* CEF_CALLBACK get_drag_handler(
 ///
 struct _cef_focus_handler_t* CEF_CALLBACK get_focus_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_focus_handler\n");
     return go_GetFocusHandler(self);
 }
 
@@ -81,7 +75,6 @@ struct _cef_focus_handler_t* CEF_CALLBACK get_focus_handler(
 ///
 struct _cef_geolocation_handler_t* CEF_CALLBACK get_geolocation_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_geolocation_handler\n");
     return go_GetGeoLocationHandler(self);
 }
 
@@ -91,7 +84,6 @@ struct _cef_geolocation_handler_t* CEF_CALLBACK get_geolocation_handler(
 ///
 struct _cef_jsdialog_handler_t* CEF_CALLBACK get_jsdialog_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_jsdialog_handler\n");
     return go_GetJsDialogHandler(self);
 }
 
@@ -100,7 +92,6 @@ struct _cef_jsdialog_handler_t* CEF_CALLBACK get_jsdialog_handler(
 ///
 struct _cef_keyboard_handler_t* CEF_CALLBACK get_keyboard_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_keyboard_handler\n");
     return go_GetKeyboardHandler(self);
 }
 
@@ -109,7 +100,6 @@ struct _cef_keyboard_handler_t* CEF_CALLBACK get_keyboard_handler(
 ///
 struct _cef_life_span_handler_t* CEF_CALLBACK get_life_span_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_life_span_handler\n");
     return go_GetLifespanHandler(self);
 }
 
@@ -118,7 +108,6 @@ struct _cef_life_span_handler_t* CEF_CALLBACK get_life_span_handler(
 ///
 struct _cef_load_handler_t* CEF_CALLBACK get_load_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_load_handler\n");
     return go_GetLoadHandler(self);
 }
 
@@ -127,7 +116,6 @@ struct _cef_load_handler_t* CEF_CALLBACK get_load_handler(
 ///
 struct _cef_render_handler_t* CEF_CALLBACK get_render_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_render_handler\n");
     return go_GetRenderHandler(self);
 }
 
@@ -136,7 +124,6 @@ struct _cef_render_handler_t* CEF_CALLBACK get_render_handler(
 ///
 struct _cef_request_handler_t* CEF_CALLBACK get_request_handler(
         struct _cef_client_t* self) {
-    DEBUG_CALLBACK("get_request_handler\n");
     return go_GetRequestHandler(self);
 }
 
@@ -149,12 +136,12 @@ int CEF_CALLBACK on_process_message_received(
         struct _cef_client_t* self,
         struct _cef_browser_t* browser, cef_process_id_t source_process,
         struct _cef_process_message_t* message) {
-    DEBUG_CALLBACK("on_process_message_received\n");
+    goDebugLog("on_process_message_received\n");
     return 0;
 }
 
 void initialize_client_handler(struct _cef_client_t* client) {
-    DEBUG_CALLBACK("initialize_client_handler\n");
+    goDebugLog("initialize_client_handler\n");
     client->base.size = sizeof(cef_client_t);
     initialize_cef_base((cef_base_t*) client);
     // callbacks

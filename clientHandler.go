@@ -97,7 +97,7 @@ func InitializeHandler() *C.struct__cef_client_t {
             C.calloc(1, C.sizeof_struct__cef_client_t))
     C.initialize_client_handler(handler)
     go_AddRef(unsafe.Pointer(handler))
-    Logger.Println("_ClientHandler: ", unsafe.Pointer(handler))
+    Logger.Infof("_ClientHandler: %x", unsafe.Pointer(handler))
     return handler
 }
 

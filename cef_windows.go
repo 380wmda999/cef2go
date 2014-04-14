@@ -16,12 +16,12 @@ import "unsafe"
 
 func FillMainArgs(mainArgs *C.struct__cef_main_args_t,
         appHandle unsafe.Pointer) {
-    Logger.Println("FillMainArgs")
+    Logger.Infof("FillMainArgs\n")
     mainArgs.instance = (C.HINSTANCE)(appHandle)
 }
 
 func FillWindowInfo(windowInfo *C.cef_window_info_t, hwnd unsafe.Pointer) {
-    Logger.Println("FillWindowInfo")
+    Logger.Infof("FillWindowInfo\n")
     var rect C.RECT
     C.GetWindowRect((C.HWND)(hwnd),
             (*C.struct_tagRECT)(unsafe.Pointer(&rect)))

@@ -20,7 +20,7 @@ struct _cef_resource_handler_t* cef_scheme_handler_factory_t_create(
 }
 
 void intialize_cef_scheme_handler_factory(struct _cef_scheme_handler_factory_t * factory) {
-    DEBUG_CALLBACK("initializeSchemeHandler\n");
+    goDebugLog("initializeSchemeHandler\n");
     factory->base.size = sizeof(cef_scheme_handler_factory_t);
     initialize_cef_base((cef_base_t*) factory);
     go_AddRef((cef_base_t*) factory);

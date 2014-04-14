@@ -105,7 +105,7 @@ func InitializeLifeSpanHandler() *C.struct__cef_life_span_handler_t {
             C.calloc(1, C.sizeof_struct__cef_life_span_handler_t))
     C.initialize_life_span_handler(handler)
     go_AddRef(unsafe.Pointer(handler))
-    Logger.Println("_LifespanHandler: ", unsafe.Pointer(handler))
+    Logger.Infof("_LifespanHandler: %x\n", unsafe.Pointer(handler))
     return handler
 }
 

@@ -57,7 +57,7 @@ func go_AddRef(it unsafe.Pointer) int {
         memoryBridge[it] = m
         return m.Count
     }
-    Logger.Println("Unknown Ref_Add: ", it)
+    Logger.Warnf("Unknown Ref_Add: %x\n", it)
     return 1
 }
 
@@ -72,7 +72,6 @@ func go_Release(it unsafe.Pointer) int {
             if m.Deconstructor != nil {
                 m.Deconstructor(it)
             }
-            Logger.Println("Known Ref_Free: ", it)
             C.free(it)
             delete(memoryBridge, it)
         } else {
@@ -81,7 +80,7 @@ func go_Release(it unsafe.Pointer) int {
         }
         return m.Count
     }
-    Logger.Println("Unknown Ref_Release: ", it)
+    Logger.Warnf("Unknown Ref_Release: %x\n", it)
     return 1
 }
 //export go_GetRefCount
@@ -92,7 +91,7 @@ func go_GetRefCount(it unsafe.Pointer) int {
     if m, ok := memoryBridge[it]; ok {
         return m.Count
     }
-    Logger.Println("Unknown Ref_Count: ", it)
+    Logger.Warnf("Unknown Ref_Count: %x\n", it)
     return 1
 }
 
@@ -102,13 +101,12 @@ func go_CreateRef(it unsafe.Pointer) {
     defer refCountLock.Unlock()
 
     if _, ok := memoryBridge[it]; !ok {
-        Logger.Println("Ref_Create: ", it)
         var m MemoryManagedBridge
         m.Deconstructor = nil
         memoryBridge[it] = m
         return
     }
-    Logger.Println("Ref Already exists Ref_Create: ", it)
+    Logger.Warnf("Ref Already exists Ref_Create: %x\n", it)
 }
 
 func RegisterDestructor(it unsafe.Pointer, decon func(it unsafe.Pointer)) bool {
@@ -126,5 +124,5 @@ func RegisterDestructor(it unsafe.Pointer, decon func(it unsafe.Pointer)) bool {
 func _InitializeGlobalCStructuresBase() {
      _MainArgs = (*C.struct__cef_main_args_t)(
             C.calloc(1, C.sizeof_struct__cef_main_args_t))
-     Logger.Println("_MainArgs: ", unsafe.Pointer(_MainArgs))
+     Logger.Infof("_MainArgs: %x", unsafe.Pointer(_MainArgs))
 }

@@ -13,7 +13,9 @@ extern void initialize_app_handler(cef_app_t* app);
 */
 import "C"
 
-import "unsafe"
+import (
+    "unsafe"
+)
 
 var _AppHandler *C.cef_app_t
 
@@ -23,5 +25,12 @@ func _InitializeGlobalCStructuresApp() {
     _AppHandler = (*C.cef_app_t)(
            C.calloc(1, C.sizeof_cef_app_t))
     C.initialize_app_handler(_AppHandler)
-    Logger.Println("_AppHandler: ", unsafe.Pointer(_AppHandler))
+    Logger.Infof("_AppHandler: %x", unsafe.Pointer(_AppHandler))
+}
+
+
+//export goDebugLog
+func goDebugLog(toLog *C.char) {
+    ll := C.GoString(toLog)
+    Logger.Infof(ll)
 }

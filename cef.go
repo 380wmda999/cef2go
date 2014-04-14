@@ -38,7 +38,34 @@ import (
     "runtime"
 )
 
-var Logger *log.Logger = log.New(os.Stdout, "[cef] ", log.Lshortfile)
+var Logger SimpleLogger = defaultLogger{}
+
+
+// A simple interface to wrap a basic leveled logger.
+// The format strings to do not have newlines on them.
+type SimpleLogger interface {
+    Infof(fmt string, args ... interface{})
+    Warnf(fmt string, args ... interface{})
+    Errorf(fmt string, args ... interface{})
+    // Log the panic and exit.
+    Panicf(fmt string, args ... interface{})
+}
+
+type defaultLogger struct {}
+
+
+func (d defaultLogger) Infof(fmt string, args ... interface{}) {
+    log.Printf("[cef] " + fmt, args...)
+}
+func (d defaultLogger) Warnf(fmt string, args ... interface{}) {
+    log.Printf("[cef] " + fmt, args...)
+}
+func (d defaultLogger) Errorf(fmt string, args ... interface{}) {
+    log.Printf("[cef] " + fmt, args...)
+}
+func (d defaultLogger) Panicf(fmt string, args ... interface{}) {
+    log.Panicf("[cef] " + fmt, args...)
+}
 
 
 // Sandbox is disabled. Including the "cef_sandbox.lib"
@@ -73,12 +100,12 @@ func _InitializeGlobalCStructures() {
 }
 
 
-func SetLogger(logger *log.Logger) {
+func SetLogger(logger SimpleLogger) {
     Logger = logger
 }
 
 func ExecuteProcess(appHandle unsafe.Pointer) int {
-    Logger.Println("ExecuteProcess, args=", os.Args)
+    Logger.Infof("ExecuteProcess, args=", os.Args)
 
     _InitializeGlobalCStructures()
     FillMainArgs(_MainArgs, appHandle)
@@ -98,7 +125,7 @@ func ExecuteProcess(appHandle unsafe.Pointer) int {
 }
 
 func Initialize(settings Settings) int {
-    Logger.Println("Initialize")
+    Logger.Infof("Initialize\n")
 
     if _MainArgs == nil {
         // _MainArgs structure is initialized and filled in ExecuteProcess.
@@ -106,7 +133,7 @@ func Initialize(settings Settings) int {
         // to cef_initialize, then it would result in creation of infinite
         // number of processes. See Issue 1199 in CEF:
         // https://code.google.com/p/chromiumembedded/issues/detail?id=1199
-        Logger.Println("ERROR: missing a call to ExecuteProcess")
+        Logger.Errorf("ERROR: missing a call to ExecuteProcess\n")
         return 0
     }
 
@@ -119,7 +146,7 @@ func Initialize(settings Settings) int {
     // cache_path
     // ----------
     if (settings.CachePath != "") {
-        Logger.Println("CachePath=", settings.CachePath)
+        Logger.Infof("CachePath=%s\n", settings.CachePath)
     }
     var cachePath *C.char = C.CString(settings.CachePath)
     defer C.free(unsafe.Pointer(cachePath))
@@ -134,7 +161,7 @@ func Initialize(settings Settings) int {
     // log_file
     // --------
     if (settings.LogFile != "") {
-        Logger.Println("LogFile=", settings.LogFile)
+        Logger.Infof("LogFile=%s\n", settings.LogFile)
     }
     var logFile *C.char = C.CString(settings.LogFile)
     defer C.free(unsafe.Pointer(logFile))
@@ -149,7 +176,7 @@ func Initialize(settings Settings) int {
         settings.ResourcesDirPath = cwd
     }
     if (settings.ResourcesDirPath != "") {
-        Logger.Println("ResourcesDirPath=", settings.ResourcesDirPath)
+        Logger.Infof("ResourcesDirPath=%s\n", settings.ResourcesDirPath)
     }
     var resourcesDirPath *C.char = C.CString(settings.ResourcesDirPath)
     defer C.free(unsafe.Pointer(resourcesDirPath))
@@ -164,7 +191,7 @@ func Initialize(settings Settings) int {
         settings.LocalesDirPath = cwd + "/locales"
     }
     if (settings.LocalesDirPath != "") {
-        Logger.Println("LocalesDirPath=", settings.LocalesDirPath)
+        Logger.Infof("LocalesDirPath=%s\n", settings.LocalesDirPath)
     }
     var localesDirPath *C.char = C.CString(settings.LocalesDirPath)
     defer C.free(unsafe.Pointer(localesDirPath))
@@ -189,7 +216,7 @@ func Initialize(settings Settings) int {
 
 func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings,
         url string) bool {
-    Logger.Println("CreateBrowser, url=", url)
+    Logger.Infof("CreateBrowser, url=%s\n", url)
 
     // Initialize cef_window_info_t structure.
     var windowInfo *C.cef_window_info_t
@@ -233,17 +260,17 @@ func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings,
 }
 
 func RunMessageLoop() {
-    Logger.Println("RunMessageLoop")
+    Logger.Infof("RunMessageLoop\n")
     C.cef_run_message_loop()
 }
 
 func QuitMessageLoop() {
-    Logger.Println("QuitMessageLoop")
+    Logger.Infof("QuitMessageLoop\n")
     C.cef_quit_message_loop()
 }
 
 func Shutdown() {
-    Logger.Println("Shutdown")
+    Logger.Infof("Shutdown\n")
     C.cef_shutdown()
     // OFF: cef_sandbox_info_destroy(_SandboxInfo)
 }
