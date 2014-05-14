@@ -27,7 +27,7 @@ type RequestHandler interface {
     OnBeforeResourceLoad(browser CefBrowserT, request CefRequestT) int
     /** Triggered when we encounter an invalid SSL cert. Return 1 to and call callback.cont() to continue or cancel the request.
         Return 0 to immediatly cancel the request.*/
-    OnCertificateError(errorCode CefErrorCode, requestUrl string, errorCallback CefCertErrorCallbackT) int
+    OnCertificateError(errorCode CefErrorCode, requestUrl string, errorCallback CefCertErrorCallbackT, signature []byte) int
 }
 
 type CefCertErrorCallbackT struct {
@@ -139,13 +139,16 @@ func go_OnCertificateError(
     self *C.struct__cef_request_handler_t,
     cert_error int, //C.enum_cef_errorcode_t,
     request_url *C.char,
-    callback *C.struct__cef_allow_certificate_error_callback_t) int {
+    callback *C.struct__cef_allow_certificate_error_callback_t,
+    signature *C.uchar) int {
 
     if globalRequestHandler != nil {
+        signatureBytes := C.GoBytes(unsafe.Pointer(signature), 20)
         return globalRequestHandler.OnCertificateError(
             CefErrorCode(cert_error),
             C.GoString(request_url),
             CefCertErrorCallbackT{callback},
+            signatureBytes,
         )
     }
     return 0

@@ -117,10 +117,11 @@ void CEF_CALLBACK on_protocol_execution(
   ///
 int CEF_CALLBACK on_certificate_error(struct _cef_request_handler_t* self,
   cef_errorcode_t cert_error, const cef_string_t* request_url,
-  struct _cef_allow_certificate_error_callback_t* callback) {
+  struct _cef_allow_certificate_error_callback_t* callback,
+  const unsigned char signature[20]) {
 
     cef_string_utf8_t * out = cefStringToUtf8(request_url);
-    int ret = go_OnCertificateError(self, cert_error, out->str, callback);
+    int ret = go_OnCertificateError(self, cert_error, out->str, callback, (unsigned char *) signature);
     cef_string_userfree_utf8_free(out);
     return ret;
 }

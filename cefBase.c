@@ -80,3 +80,12 @@ cef_string_utf8_t * cefStringToUtf8(const cef_string_t * source) {
     cef_string_to_utf8(source->str, source->length, output);
     return output;
 }
+
+
+cef_string_t * cefString16CastToCefString(cef_string_utf16_t * source) {
+    return (cef_string_t *) source;
+}
+cef_string_utf16_t * cefStringCastToCefString16(cef_string_t * source) {
+    return (cef_string_utf16_t *) source;
+}
+

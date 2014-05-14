@@ -20,4 +20,7 @@ int CEF_CALLBACK get_refct(cef_base_t* self);
 int add_refVoid(void* self);
 int releaseVoid(void* self);
 
+cef_string_t * cefString16CastToCefString(cef_string_utf16_t * source);
+cef_string_utf16_t * cefStringCastToCefString16(cef_string_t * source);
+
 #endif

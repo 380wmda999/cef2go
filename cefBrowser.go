@@ -150,14 +150,14 @@ func (b CefBrowserT) GetFrameNames() []string {
     length := int(C.cef_string_list_size(nameList))
     goList := make([]string, length)
     for i := range goList {
-        var cefName *C.cef_string_t = C.cef_string_userfree_utf16_alloc()
+        var cefName *C.cef_string_t = C.cefString16CastToCefString(C.cef_string_userfree_utf16_alloc())
         didRet := C.cef_string_list_value(nameList, C.int(i), cefName)
         if didRet == C.int(1) {
             nameUtf8 := C.cefStringToUtf8(cefName)
             goList[i] = C.GoString(nameUtf8.str)
             C.cef_string_userfree_utf8_free(nameUtf8)
         }
-        C.cef_string_userfree_utf16_free(cefName)
+        C.cef_string_userfree_utf16_free(C.cefStringCastToCefString16(cefName))
     }
     return goList
 }
