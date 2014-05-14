@@ -38,10 +38,6 @@
 #define CEF_INCLUDE_CAPI_CEF_REQUEST_HANDLER_CAPI_H_
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "include/capi/cef_auth_callback_capi.h"
 #include "include/capi/cef_base_capi.h"
 #include "include/capi/cef_browser_capi.h"
@@ -50,6 +46,10 @@ extern "C" {
 #include "include/capi/cef_resource_handler_capi.h"
 #include "include/capi/cef_response_capi.h"
 #include "include/capi/cef_web_plugin_capi.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 ///
@@ -192,7 +192,8 @@ typedef struct _cef_request_handler_t {
   ///
   int (CEF_CALLBACK *on_certificate_error)(struct _cef_request_handler_t* self,
       cef_errorcode_t cert_error, const cef_string_t* request_url,
-      struct _cef_allow_certificate_error_callback_t* callback);
+      struct _cef_allow_certificate_error_callback_t* callback,
+      const unsigned char signature[20]);
 
   ///
   // Called on the browser process IO thread before a plugin is loaded. Return
