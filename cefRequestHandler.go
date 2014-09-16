@@ -59,7 +59,8 @@ func go_OnBeforeBrowse(
             is_redirect,
         )
     }
-
+    CefBrowserT{browser}.Release()
+    CefRequestT{request}.Release()
     return 0
 }
 
@@ -70,13 +71,16 @@ func go_OnBeforeResourceLoad(
     frame *C.struct__cef_frame_t,
     request *C.struct__cef_request_t) int {
 
+    defer CefFrameT{frame}.Release()
+
     if globalRequestHandler != nil {
         return globalRequestHandler.OnBeforeResourceLoad(
             CefBrowserT{browser},
             CefRequestT{request},
         )
     }
-
+    CefBrowserT{browser}.Release()
+    CefRequestT{request}.Release()
     return 0
 }
 
@@ -86,6 +90,10 @@ func go_GetResourceHandler(
         browser *C.struct__cef_browser_t,
         frame *C.struct__cef_frame_t,
         request *C.struct__cef_request_t) *C.struct__cef_resource_handler_t {
+
+    CefBrowserT{browser}.Release()
+    CefRequestT{request}.Release()
+    CefFrameT{frame}.Release()
 
     return nil
 }
