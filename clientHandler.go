@@ -42,6 +42,10 @@ func go_GetDisplayHandler(self *C.struct__cef_client_t) *C.struct__cef_display_h
 
 //export go_GetDownloadHandler
 func go_GetDownloadHandler(self *C.struct__cef_client_t) *C.struct__cef_download_handler_t {
+    if globalDownloadHandler != nil {
+        go_AddRef(unsafe.Pointer(_DownloadHandler))
+        return _DownloadHandler
+    }
     return nil
 }
 
