@@ -43,7 +43,10 @@ func go_OnAddressChange(self *C.struct__cef_display_handler_t,
             CefFrameT{frame},
             C.GoString(url),
         )
+        return
     }
+    CefBrowserT{browser}.Release()
+    CefFrameT{frame}.Release()
 
 }
 //export go_OnTitleChange
@@ -55,7 +58,9 @@ func go_OnTitleChange(self *C.struct__cef_display_handler_t,
             CefBrowserT{browser},
             C.GoString(title),
         )
+        return
     }
+    CefBrowserT{browser}.Release()
 
 }
 //export go_OnTooltip
@@ -72,6 +77,7 @@ func go_OnTooltip(self *C.struct__cef_display_handler_t,
         }
         return 0
     }
+    CefBrowserT{browser}.Release()
     return 0
 
 }
@@ -85,7 +91,9 @@ func go_OnStatusMessage(self *C.struct__cef_display_handler_t,
             CefBrowserT{browser},
             C.GoString(value),
         )
+        return
     }
+    CefBrowserT{browser}.Release()
 
 }
 //export go_OnConsoleMessage
@@ -107,6 +115,7 @@ func go_OnConsoleMessage(self *C.struct__cef_display_handler_t,
         }
         return 0
     }
+    CefBrowserT{browser}.Release()
     return 0
 }
 

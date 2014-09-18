@@ -139,6 +139,7 @@ func _InitializeGlobalCStructures() {
     _LifeSpanHandler = InitializeLifeSpanHandler()
     _DisplayHandler = InitializeDisplayHandler()
     _ClientHandler = InitializeHandler()
+    _DownloadHandler = InitializeDownloadHandler()
 }
 
 
