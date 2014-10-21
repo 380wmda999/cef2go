@@ -14,6 +14,7 @@ extern void intialize_cef_resource_handler(struct _cef_resource_handler_t* handl
 import "C"
 
 import "unsafe"
+import "fmt"
 
 type CefResourceHandlerT struct {
     CStruct         *C.struct__cef_resource_handler_t
@@ -120,6 +121,9 @@ func go_ReadResponse(
             int(bytes_to_read),
             CefCallbackT{callback},
         )
+        if len(dataOut) != bytesRead {
+            panic(fmt.Sprintf("The response given to ReadResponse is invalid. bytes given %d is does not equal bytesRead %d", len(dataOut), bytesRead))
+        }
         dataOutCString := C.CString(string(dataOut))
         defer C.free(unsafe.Pointer(dataOutCString))
         C.memcpy(data_out, unsafe.Pointer(dataOutCString), C.size_t(bytesRead))
