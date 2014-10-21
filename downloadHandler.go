@@ -128,6 +128,9 @@ func (c CefDownloadItemT) GetEndTime() CefTimeT {
 }
 func (c CefDownloadItemT) GetFullPath() string {
     stringStruct := C.callCefDownloadItem_get_full_path(c.Self)
+    if stringStruct == nil {
+        return ""
+    }
     defer C.cef_string_userfree_utf8_free(stringStruct)
     str := C.GoString(stringStruct.str)
     return str

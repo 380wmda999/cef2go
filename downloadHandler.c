@@ -63,6 +63,9 @@ cef_time_t callCefDownloadItem_get_end_time(struct _cef_download_item_t* self) {
 }
 cef_string_utf8_t* callCefDownloadItem_get_full_path(struct _cef_download_item_t* self) {
     cef_string_userfree_t str = self->get_full_path(self);
+    if (str == NULL) {
+        return NULL;
+    }
     cef_string_utf8_t * out = cefStringToUtf8(str);
     cef_string_userfree_free(str);
     return out;
