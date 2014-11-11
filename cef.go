@@ -86,6 +86,7 @@ type Settings struct {
     LocalesDirPath          string
     RemoteDebuggingPort     int
     PersistSessionCookies   bool
+    IgnoreCertificateErrors int
 }
 
 type CefState int
@@ -127,7 +128,6 @@ type BrowserSettings struct {
     Databases                       CefState
     ApplicationCache                CefState
     Webgl                           CefState
-    AcceleratedCompositing          CefState
     BackgroundColor                 uint32
 
 }
@@ -195,7 +195,7 @@ func Initialize(settings Settings) int {
     var cachePath *C.char = C.CString(settings.CachePath)
     defer C.free(unsafe.Pointer(cachePath))
     C.cef_string_from_utf8(cachePath, C.strlen(cachePath),
-            &cefSettings.cache_path)
+            C.cefStringCastToCefString16(&cefSettings.cache_path))
 
     // log_severity
     // ------------
@@ -210,7 +210,7 @@ func Initialize(settings Settings) int {
     var logFile *C.char = C.CString(settings.LogFile)
     defer C.free(unsafe.Pointer(logFile))
     C.cef_string_from_utf8(logFile, C.strlen(logFile),
-            &cefSettings.log_file)
+            C.cefStringCastToCefString16(&cefSettings.log_file))
 
     // resources_dir_path
     // ------------------
@@ -225,7 +225,7 @@ func Initialize(settings Settings) int {
     var resourcesDirPath *C.char = C.CString(settings.ResourcesDirPath)
     defer C.free(unsafe.Pointer(resourcesDirPath))
     C.cef_string_from_utf8(resourcesDirPath, C.strlen(resourcesDirPath),
-            &cefSettings.resources_dir_path)
+            C.cefStringCastToCefString16(&cefSettings.resources_dir_path))
 
     // locales_dir_path
     // ----------------
@@ -240,12 +240,14 @@ func Initialize(settings Settings) int {
     var localesDirPath *C.char = C.CString(settings.LocalesDirPath)
     defer C.free(unsafe.Pointer(localesDirPath))
     C.cef_string_from_utf8(localesDirPath, C.strlen(localesDirPath),
-            &cefSettings.locales_dir_path)
+            C.cefStringCastToCefString16(&cefSettings.locales_dir_path))
 
     if settings.PersistSessionCookies {
         cefSettings.persist_session_cookies = 1
     }
     cefSettings.remote_debugging_port = C.int(settings.RemoteDebuggingPort)
+
+    cefSettings.ignore_certificate_errors = C.int(settings.IgnoreCertificateErrors)
 
     // no_sandbox
     // ----------
@@ -274,7 +276,7 @@ func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings,
             C.calloc(1, C.sizeof_cef_string_t))
     var charUrl *C.char = C.CString(url)
     defer C.free(unsafe.Pointer(charUrl))
-    C.cef_string_from_utf8(charUrl, C.strlen(charUrl), cefUrl)
+    C.cef_string_from_utf8(charUrl, C.strlen(charUrl), C.cefStringCastToCefString16(cefUrl))
 
     // Initialize cef_browser_settings_t structure.
     cefBrowserSettings := browserSettings.toC()
@@ -321,22 +323,22 @@ func extractCefMultiMap(cefMapPointer C.cef_string_multimap_t) map[string][]stri
     numKeys := C.cef_string_multimap_size(cefMapPointer)
     goMap := make(map[string][]string)
     for i := 0; i < int(numKeys); i++ {
-        var key *C.cef_string_t = C.cef_string_userfree_utf16_alloc()
-        C.cef_string_multimap_key(cefMapPointer, C.int(i), key)
-        charKeyUtf8 := C.cefStringToUtf8(key)
+        var key *C.cef_string_utf16_t = C.cef_string_userfree_utf16_alloc()
+        C.cef_string_multimap_key(cefMapPointer, C.int(i), C.cefString16CastToCefString(key))
+        charKeyUtf8 := C.cefStringToUtf8(C.cefString16CastToCefString(key))
         goKey := C.GoString(charKeyUtf8.str)
         if _, ok := goMap[goKey]; ok {
             continue
         }
-        numValsForKey := C.cef_string_multimap_find_count(cefMapPointer, key)
+        numValsForKey := C.cef_string_multimap_find_count(cefMapPointer, C.cefString16CastToCefString(key))
 
         if numValsForKey >= 0 {
             goVals := make([]string, numValsForKey)
             for k := 0; k < int(numValsForKey); k++ {
-                var val *C.cef_string_t = C.cef_string_userfree_utf16_alloc()
+                var val *C.cef_string_utf16_t = C.cef_string_userfree_utf16_alloc()
                 C.cef_string_multimap_enumerate(cefMapPointer,
-                    key, C.int(k), val)
-                charValUtf8 := C.cefStringToUtf8(val)
+                    C.cefString16CastToCefString(key), C.int(k), C.cefString16CastToCefString(val))
+                charValUtf8 := C.cefStringToUtf8(C.cefString16CastToCefString(val))
                 goVals[k] = C.GoString(charValUtf8.str)
                 C.cef_string_userfree_utf8_free(charValUtf8)
                 C.cef_string_userfree_utf16_free(val)
@@ -413,7 +415,6 @@ func (b BrowserSettings) toC() *C.struct__cef_browser_settings_t {
     cefBrowserSettings.databases = C.cef_state_t(b.Databases)
     cefBrowserSettings.application_cache = C.cef_state_t(b.ApplicationCache)
     cefBrowserSettings.webgl = C.cef_state_t(b.Webgl)
-    cefBrowserSettings.accelerated_compositing = C.cef_state_t(b.AcceleratedCompositing)
     cefBrowserSettings.background_color = C.cef_color_t(b.BackgroundColor)
     return cefBrowserSettings
 }

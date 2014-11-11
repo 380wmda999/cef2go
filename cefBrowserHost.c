@@ -15,12 +15,6 @@ struct _cef_browser_t* cef_browser_host_t_get_browser(
     return self->get_browser(self);
 }
 
-void cef_browser_host_t_parent_window_will_close(
-  struct _cef_browser_host_t* self)
-{
-    self->parent_window_will_close(self);
-}
-
 void cef_browser_host_t_close_browser(struct _cef_browser_host_t* self,
   int force_close)
 {
@@ -144,10 +138,9 @@ void cef_browser_host_t_notify_screen_info_changed(
     self->notify_screen_info_changed(self);
 }
 
-void cef_browser_host_t_invalidate(struct _cef_browser_host_t* self,
-  const cef_rect_t* dirtyRect, cef_paint_element_type_t type)
+void cef_browser_host_t_invalidate(struct _cef_browser_host_t* self, cef_paint_element_type_t type)
 {
-    self->invalidate(self, dirtyRect, type);
+    self->invalidate(self, type);
 }
 
 void cef_browser_host_t_send_key_event(struct _cef_browser_host_t* self,

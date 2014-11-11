@@ -27,82 +27,40 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-#ifndef CEF_INCLUDE_INTERNAL_CEF_TYPES_MAC_H_
-#define CEF_INCLUDE_INTERNAL_CEF_TYPES_MAC_H_
+#ifndef CEF_INCLUDE_INTERNAL_CEF_LOGGING_INTERNAL_H_
+#define CEF_INCLUDE_INTERNAL_CEF_LOGGING_INTERNAL_H_
 #pragma once
 
-#include "include/internal/cef_build.h"
-
-#if defined(OS_MACOSX)
-#include "include/internal/cef_string.h"
-
-// Handle types.
-#ifdef __cplusplus
-#ifdef __OBJC__
-@class NSCursor;
-@class NSEvent;
-@class NSView;
-@class NSTextInputContext;
-#else
-class NSCursor;
-class NSEvent;
-struct NSView;
-class NSTextInputContext;
-#endif
-#define cef_cursor_handle_t NSCursor*
-#define cef_event_handle_t NSEvent*
-#define cef_window_handle_t NSView*
-#define cef_text_input_context_t NSTextInputContext*
-#else
-#define cef_cursor_handle_t void*
-#define cef_event_handle_t void*
-#define cef_window_handle_t void*
-#define cef_text_input_context_t void*
-#endif
+#include "include/internal/cef_export.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-///
-// Structure representing CefExecuteProcess arguments.
-///
-typedef struct _cef_main_args_t {
-  int argc;
-  char** argv;
-} cef_main_args_t;
+// See include/base/cef_logging.h for macros and intended usage.
 
 ///
-// Class representing window information.
+// Gets the current log level.
 ///
-typedef struct _cef_window_info_t {
-  cef_string_t window_name;
-  int x;
-  int y;
-  int width;
-  int height;
-  int hidden;
+CEF_EXPORT int cef_get_min_log_level();
 
-  // NSView pointer for the parent view.
-  cef_window_handle_t parent_view;
+///
+// Gets the current vlog level for the given file (usually taken from
+// __FILE__). Note that |N| is the size *with* the null terminator.
+///
+CEF_EXPORT int cef_get_vlog_level(const char* file_start, size_t N);
 
-  // If window rendering is disabled no browser window will be created. Set
-  // |parent_view| to the window that will act as the parent for popup menus,
-  // dialog boxes, etc.
-  int window_rendering_disabled;
-
-  // Set to true to enable transparent painting.
-  int transparent_painting;
-
-  // NSView pointer for the new browser view.
-  cef_window_handle_t view;
-} cef_window_info_t;
+///
+// Add a log message. See the LogSeverity defines for supported |severity|
+// values.
+///
+CEF_EXPORT void cef_log(const char* file,
+                        int line,
+                        int severity,
+                        const char* message);
 
 #ifdef __cplusplus
 }
-#endif
+#endif  // __cplusplus
 
-#endif  // OS_MACOSX
-
-#endif  // CEF_INCLUDE_INTERNAL_CEF_TYPES_MAC_H_
+#endif  // CEF_INCLUDE_INTERNAL_CEF_LOGGING_INTERNAL_H_

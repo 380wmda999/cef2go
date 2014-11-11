@@ -13,7 +13,6 @@ package cef2go
 
 
 extern struct _cef_browser_t* cef_browser_host_t_get_browser(struct _cef_browser_host_t* self);
-extern void cef_browser_host_t_parent_window_will_close(struct _cef_browser_host_t* self);
 extern void cef_browser_host_t_close_browser(struct _cef_browser_host_t* self,int force_close);
 extern void cef_browser_host_t_set_focus(struct _cef_browser_host_t* self, int enable);
 extern cef_window_handle_t cef_browser_host_t_get_window_handle(struct _cef_browser_host_t* self);
@@ -34,7 +33,7 @@ extern int cef_browser_host_t_is_window_rendering_disabled(struct _cef_browser_h
 extern void cef_browser_host_t_was_resized(struct _cef_browser_host_t* self);
 extern void cef_browser_host_t_was_hidden(struct _cef_browser_host_t* self, int hidden);
 extern void cef_browser_host_t_notify_screen_info_changed(struct _cef_browser_host_t* self);
-extern void cef_browser_host_t_invalidate(struct _cef_browser_host_t* self,const cef_rect_t* dirtyRect, cef_paint_element_type_t type);
+extern void cef_browser_host_t_invalidate(struct _cef_browser_host_t* self, cef_paint_element_type_t type);
 extern void cef_browser_host_t_send_key_event(struct _cef_browser_host_t* self, const struct _cef_key_event_t* event);
 extern void cef_browser_host_t_send_mouse_click_event(struct _cef_browser_host_t* self, const struct _cef_mouse_event_t* event, cef_mouse_button_type_t type, int mouseUp, int clickCount);
 extern void cef_browser_host_t_send_mouse_move_event(struct _cef_browser_host_t* self,const struct _cef_mouse_event_t* event, int mouseLeave);
@@ -82,10 +81,6 @@ type CefRectT struct {
 
 func (b CefBrowserHostT) GetBrowser() CefBrowserT {
     return CefBrowserT{C.cef_browser_host_t_get_browser(b.CStruct)}
-}
-
-func (b CefBrowserHostT) ParentWindowWillClose() {
-    C.cef_browser_host_t_parent_window_will_close(b.CStruct)
 }
 
 func (b CefBrowserHostT) CloseBrowser(forceClose int) {
@@ -165,8 +160,8 @@ func (b CefBrowserHostT) NotifyScreenInfoChange() {
     C.cef_browser_host_t_notify_screen_info_changed(b.CStruct)
 }
 
-func (b CefBrowserHostT) Invalidate(dirty CefRectT, paintType C.cef_paint_element_type_t) {
-    C.cef_browser_host_t_invalidate(b.CStruct, dirty.CStruct, paintType)
+func (b CefBrowserHostT) Invalidate(paintType C.cef_paint_element_type_t) {
+    C.cef_browser_host_t_invalidate(b.CStruct, paintType)
 }
 
 func (b CefBrowserHostT) SendKeyEvent(event CefKeyEventT) {

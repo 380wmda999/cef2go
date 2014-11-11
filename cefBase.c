@@ -36,7 +36,7 @@ int CEF_CALLBACK release(cef_base_t* self) {
 ///
 // Returns the current number of references.
 ///
-int CEF_CALLBACK get_refct(cef_base_t* self) {
+int CEF_CALLBACK has_one_ref(cef_base_t* self) {
     return go_GetRefCount((void *) self);
 }
 
@@ -61,7 +61,7 @@ void initialize_cef_base(cef_base_t* base) {
     }
     base->add_ref = add_ref;
     base->release = release;
-    base->get_refct = get_refct;
+    base->has_one_ref = has_one_ref;
 
     go_CreateRef((void *) base);
 }
@@ -79,4 +79,13 @@ cef_string_utf8_t * cefStringToUtf8(const cef_string_t * source) {
     }
     cef_string_to_utf8(source->str, source->length, output);
     return output;
+}
+
+
+
+cef_string_t * cefString16CastToCefString(cef_string_utf16_t * source) {
+    return (cef_string_t *) source;
+}
+cef_string_utf16_t * cefStringCastToCefString16(cef_string_t * source) {
+    return (cef_string_utf16_t *) source;
 }
