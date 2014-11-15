@@ -28,6 +28,7 @@
 void CEF_CALLBACK on_before_command_line_processing(
         struct _cef_app_t* self, const cef_string_t* process_type,
         struct _cef_command_line_t* command_line) {
+    releaseVoid((void *) command_line);
     goDebugLog("on_before_command_line_processing\n");
 }
 
@@ -40,6 +41,7 @@ void CEF_CALLBACK on_before_command_line_processing(
 void CEF_CALLBACK on_register_custom_schemes(
         struct _cef_app_t* self,
         struct _cef_scheme_registrar_t* registrar) {
+    releaseVoid((void *) registrar);
     goDebugLog("on_register_custom_schemes\n");
 }
 
@@ -62,7 +64,7 @@ struct _cef_resource_bundle_handler_t*
 struct _cef_browser_process_handler_t*
         CEF_CALLBACK get_browser_process_handler(struct _cef_app_t* self) {
     goDebugLog("get_browser_process_handler\n");
-    return NULL;
+    return go_GetBrowserProcessHandler(self);
 }
 
 ///
@@ -78,7 +80,7 @@ struct _cef_render_process_handler_t*
 void initialize_app_handler(cef_app_t* app) {
     goDebugLog("initialize_app_handler\n");
     app->base.size = sizeof(cef_app_t);
-    initialize_cef_base((cef_base_t*) app);
+    initialize_cef_base((cef_base_t*) app, "app_handler");
     go_AddRef((cef_base_t*) app);
     // callbacks
     app->on_before_command_line_processing = on_before_command_line_processing;

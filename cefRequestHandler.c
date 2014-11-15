@@ -58,7 +58,7 @@ struct _cef_resource_handler_t* CEF_CALLBACK get_resource_handler(
   // parameter will contain the old URL. The |new_url| parameter will contain
   // the new URL and can be changed if desired.
   ///
-void on_resource_redirect(struct _cef_request_handler_t* self,
+void CEF_CALLBACK on_resource_redirect(struct _cef_request_handler_t* self,
   struct _cef_browser_t* browser, struct _cef_frame_t* frame,
   const cef_string_t* old_url, cef_string_t* new_url) {
     go_OnResourceRedirect(self, browser, frame, (char *) old_url, (char *) new_url);
@@ -158,7 +158,7 @@ void CEF_CALLBACK on_render_process_terminated(
 void initialize_request_handler(struct _cef_request_handler_t * requestHandler) {
     goDebugLog("initializeRequestHandler\n");
     requestHandler->base.size = sizeof(cef_request_handler_t);
-    initialize_cef_base((cef_base_t*) requestHandler);
+    initialize_cef_base((cef_base_t*) requestHandler, "request_handler");
     // callbacks
     requestHandler->on_before_browse = on_before_browse;
     requestHandler->on_before_resource_load = on_before_resource_load;

@@ -6,12 +6,10 @@
 package cef2go
 
 /*
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 CEF capi fixes
---------------
-1. In cef_string.h:
-    this => typedef cef_string_utf16_t cef_string_t;
-    to => #define cef_string_t cef_string_utf16_t
-2. In cef_export.h:
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+1. In cef_export.h:
     #elif defined(COMPILER_GCC)
     #define CEF_EXPORT __attribute__ ((visibility("default")))
     #ifdef OS_WIN
@@ -134,12 +132,10 @@ type BrowserSettings struct {
 
 func _InitializeGlobalCStructures() {
     _InitializeGlobalCStructuresBase()
-    _InitializeGlobalCStructuresApp()
-    _RequestHandler = InitializeRequestHandler()
-    _LifeSpanHandler = InitializeLifeSpanHandler()
+    //_InitializeGlobalCStructuresApp()
+    /*
     _DisplayHandler = InitializeDisplayHandler()
-    _ClientHandler = InitializeHandler()
-    _DownloadHandler = InitializeDownloadHandler()
+    _DownloadHandler = InitializeDownloadHandler()*/
 }
 
 
@@ -147,28 +143,33 @@ func SetLogger(logger SimpleLogger) {
     Logger = logger
 }
 
-func ExecuteProcess(appHandle unsafe.Pointer) int {
-    Logger.Infof("ExecuteProcess, args=", os.Args)
+func ExecuteProcess(programHandle unsafe.Pointer, appHandler AppHandler) int {
+    Logger.Infof("ExecuteProcess, args=%v", os.Args)
 
     _InitializeGlobalCStructures()
-    FillMainArgs(_MainArgs, appHandle)
+
+    if appHandler.GetAppHandlerT().CStruct == nil {
+        panic("GetAppHandlerT cannot have a nil CStruct. Call NewAppHandlerT() to create one!")
+    }
+
+    FillMainArgs(_MainArgs, programHandle)
 
     // Sandbox info needs to be passed to both cef_execute_process()
     // and cef_initialize().
     // OFF: _SandboxInfo = C.cef_sandbox_info_create()
+    Logger.Infof("MainArgs %X _AppHanlder %X _SandboxInfo %X", _MainArgs, appHandler.GetAppHandlerT().CStruct, _SandboxInfo)
 
     go_AddRef(unsafe.Pointer(_MainArgs))
-    go_AddRef(unsafe.Pointer(_AppHandler))
+    go_AddRef(unsafe.Pointer(appHandler.GetAppHandlerT().CStruct))
     go_AddRef(unsafe.Pointer(_SandboxInfo))
-    var exitCode C.int = C.cef_execute_process(_MainArgs, _AppHandler,
-            _SandboxInfo)
+    var exitCode C.int = C.cef_execute_process(_MainArgs, appHandler.GetAppHandlerT().CStruct, _SandboxInfo)
     if (exitCode >= 0) {
         os.Exit(int(exitCode))
     }
     return int(exitCode)
 }
 
-func Initialize(settings Settings) int {
+func Initialize(settings Settings, appHandler AppHandler) int {
     Logger.Infof("Initialize\n")
 
     if _MainArgs == nil {
@@ -254,15 +255,16 @@ func Initialize(settings Settings) int {
     cefSettings.no_sandbox = C.int(1)
 
     go_AddRef(unsafe.Pointer(_MainArgs))
-    go_AddRef(unsafe.Pointer(_AppHandler))
+    go_AddRef(unsafe.Pointer(appHandler.GetAppHandlerT().CStruct))
     go_AddRef(unsafe.Pointer(_SandboxInfo))
-    ret := C.cef_initialize(_MainArgs, cefSettings, _AppHandler, _SandboxInfo)
+    ret := C.cef_initialize(_MainArgs, cefSettings, appHandler.GetAppHandlerT().CStruct, _SandboxInfo)
     return int(ret)
 }
 
-func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings,
+func CreateBrowser(hwnd unsafe.Pointer, clientHandler ClientHandler, browserSettings BrowserSettings,
         url string) bool {
     Logger.Infof("CreateBrowser, url=%s\n", url)
+
 
     // Initialize cef_window_info_t structure.
     var windowInfo *C.cef_window_info_t
@@ -291,16 +293,17 @@ func CreateBrowser(hwnd unsafe.Pointer, browserSettings BrowserSettings,
     // will first guess the CEF window handle using for example
     // WinAPI functions and then search the global map of cef
     // browser objects.
-    go_AddRef(unsafe.Pointer(_ClientHandler))
+    go_AddRef(unsafe.Pointer(clientHandler.GetClientHandlerT().CStruct))
     result := C.cef_browser_host_create_browser(
         windowInfo,
-        _ClientHandler,
+        clientHandler.GetClientHandlerT().CStruct,
         cefUrl,
         cefBrowserSettings,
         nil,
     )
     return result == C.int(1)
 }
+
 
 func RunMessageLoop() {
     Logger.Infof("RunMessageLoop\n")

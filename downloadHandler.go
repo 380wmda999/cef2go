@@ -33,13 +33,30 @@ extern cef_string_utf8_t* callCefDownloadItem_get_mime_type(struct _cef_download
 import "C"
 import "unsafe"
 
-var globalDownloadHandler DownloadHandler
-var _DownloadHandler *C.struct__cef_download_handler_t
+var (
+    downloadHandlerMap      = make(map[unsafe.Pointer]DownloadHandler)
+)
 
 type DownloadHandler interface {
     OnBeforeDownload(browser CefBrowserT, downloadItem CefDownloadItemT, suggestedName string, callback CefBeforeDownloadCallbackT) string
     OnDownloadUpdated(browser CefBrowserT, downloadItem CefDownloadItemT, callback CefDownloadItemCallbackT)
+
+    GetDownloadHandlerT() DownloadHandlerT
 }
+
+type DownloadHandlerT struct {
+    CStruct             *C.struct__cef_download_handler_t
+}
+
+func (r DownloadHandlerT) AddRef() {
+    AddRef(unsafe.Pointer(r.CStruct))
+}
+func (r DownloadHandlerT) Release() {
+    Release(unsafe.Pointer(r.CStruct))
+}
+
+
+
 
 type CefTimeT struct {
     Self            C.cef_time_t
@@ -174,8 +191,8 @@ func go_OnBeforeDownload(
     defer C.cef_string_userfree_utf8_free(suggested_name)
     str := C.GoString(suggested_name.str)
 
-    if globalDownloadHandler != nil {
-        globalDownloadHandler.OnBeforeDownload(
+    if handler, ok := downloadHandlerMap[unsafe.Pointer(self)]; ok {
+        handler.OnBeforeDownload(
             CefBrowserT{browser},
             CefDownloadItemT{download_item},
             str,
@@ -196,8 +213,8 @@ func go_OnDownloadUpdated(
     download_item * C.struct__cef_download_item_t,
     callback * C.struct__cef_download_item_callback_t) {
 
-    if globalDownloadHandler != nil {
-        globalDownloadHandler.OnDownloadUpdated(
+    if handler, ok := downloadHandlerMap[unsafe.Pointer(self)]; ok {
+        handler.OnDownloadUpdated(
             CefBrowserT{browser},
             CefDownloadItemT{download_item},
             CefDownloadItemCallbackT{callback},
@@ -211,16 +228,13 @@ func go_OnDownloadUpdated(
 }
 
 
-func InitializeDownloadHandler() *C.struct__cef_download_handler_t {
-    var handler *C.struct__cef_download_handler_t
-    handler = (*C.struct__cef_download_handler_t)(
+func NewDownloadHandlerT(download DownloadHandler) DownloadHandlerT {
+    var handler DownloadHandlerT
+    handler.CStruct = (*C.struct__cef_download_handler_t)(
             C.calloc(1, C.sizeof_struct__cef_download_handler_t))
-    C.initialize_download_handler(handler)
-    go_AddRef(unsafe.Pointer(handler))
-    Logger.Infof("_DownloadHandler: %x", unsafe.Pointer(handler))
+    C.initialize_download_handler(handler.CStruct)
+    go_AddRef(unsafe.Pointer(handler.CStruct))
+    Logger.Infof("_DownloadHandler: %x", unsafe.Pointer(handler.CStruct))
+    downloadHandlerMap[unsafe.Pointer(handler.CStruct)] = download
     return handler
-}
-
-func SetDownloadHandler(d DownloadHandler) {
-    globalDownloadHandler = d
 }

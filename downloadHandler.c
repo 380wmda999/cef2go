@@ -141,7 +141,7 @@ void CEF_CALLBACK on_download_updated(struct _cef_download_handler_t* self,
 void initialize_download_handler(struct _cef_download_handler_t* self) {
     goDebugLog("initialize_download_handler\n");
     self->base.size = sizeof(cef_download_handler_t);
-    initialize_cef_base((cef_base_t*) self);
+    initialize_cef_base((cef_base_t*) self, "download_handler");
     // callbacks
     self->on_before_download = on_before_download;
     self->on_download_updated = on_download_updated;

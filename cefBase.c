@@ -21,8 +21,8 @@
 ///
 // Increment the reference count.
 ///
-int CEF_CALLBACK add_ref(cef_base_t* self) {
-    return go_AddRef((void *) self);
+void CEF_CALLBACK add_ref(cef_base_t* self) {
+    go_AddRef((void *) self);
 }
 
 ///
@@ -37,17 +37,23 @@ int CEF_CALLBACK release(cef_base_t* self) {
 // Returns the current number of references.
 ///
 int CEF_CALLBACK has_one_ref(cef_base_t* self) {
-    return go_GetRefCount((void *) self);
+    return go_HasOneReferenceCount((void *) self);
 }
 
-int add_refVoid(void* self) {
+void add_refVoid(void* self) {
+    if (self == NULL) {
+        return;
+    }
     ((cef_base_t*) self)->add_ref((cef_base_t*) self);
 }
 int releaseVoid(void* self) {
-    ((cef_base_t*) self)->release((cef_base_t*) self);
+    if (self == NULL) {
+        return 1;
+    }
+    return ((cef_base_t*) self)->release((cef_base_t*) self);
 }
 
-void initialize_cef_base(cef_base_t* base) {
+void initialize_cef_base(cef_base_t* base, char *name) {
     goDebugLog("initialize_cef_base\n");
     // Check if "size" member was set.
     size_t size = base->size;
@@ -63,7 +69,7 @@ void initialize_cef_base(cef_base_t* base) {
     base->release = release;
     base->has_one_ref = has_one_ref;
 
-    go_CreateRef((void *) base);
+    go_CreateRef((void *) base, name);
 }
 
 //

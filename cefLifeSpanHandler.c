@@ -62,7 +62,7 @@ void CEF_CALLBACK cef_life_span_handler_t_on_before_close(
 void initialize_life_span_handler(struct _cef_life_span_handler_t* lifeHandler) {
     goDebugLog("initialize_life_span_handler\n");
     lifeHandler->base.size = sizeof(cef_life_span_handler_t);
-    initialize_cef_base((cef_base_t*) lifeHandler);
+    initialize_cef_base((cef_base_t*) lifeHandler, "life_span_handler");
     go_AddRef((cef_base_t*) lifeHandler);
     // callbacks
     lifeHandler->on_before_popup = cef_life_span_handler_t_on_before_popup;

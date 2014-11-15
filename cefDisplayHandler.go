@@ -24,10 +24,25 @@ type DisplayHandler interface {
     OnToolTip(browser CefBrowserT, text string) bool
     OnStatusMessage(browser CefBrowserT, value string)
     OnConsoleMessage(browser CefBrowserT, message, source string, line int) bool
+
+    GetDisplayHandlerT() DisplayHandlerT
 }
 
-var _DisplayHandler *C.struct__cef_display_handler_t // requires reference counting
-var globalDisplayHandler DisplayHandler
+var (
+    displayHandlerMap       = make(map[unsafe.Pointer]DisplayHandler)
+)
+
+type DisplayHandlerT struct {
+    CStruct             *C.struct__cef_display_handler_t
+}
+
+func (r DisplayHandlerT) AddRef() {
+    AddRef(unsafe.Pointer(r.CStruct))
+}
+func (r DisplayHandlerT) Release() {
+    Release(unsafe.Pointer(r.CStruct))
+}
+
 
 
 
@@ -37,8 +52,8 @@ func go_OnAddressChange(self *C.struct__cef_display_handler_t,
         frame *C.struct__cef_frame_t,
         url *C.char) {
 
-    if globalDisplayHandler != nil {
-        globalDisplayHandler.OnAddressChange(
+    if handler, ok := displayHandlerMap[unsafe.Pointer(self)]; ok {
+        handler.OnAddressChange(
             CefBrowserT{browser},
             CefFrameT{frame},
             C.GoString(url),
@@ -47,14 +62,14 @@ func go_OnAddressChange(self *C.struct__cef_display_handler_t,
     }
     CefBrowserT{browser}.Release()
     CefFrameT{frame}.Release()
-
 }
+
 //export go_OnTitleChange
 func go_OnTitleChange(self *C.struct__cef_display_handler_t,
         browser * C.struct__cef_browser_t,
         title *C.char) {
-    if globalDisplayHandler != nil {
-        globalDisplayHandler.OnTitleChange(
+    if handler, ok := displayHandlerMap[unsafe.Pointer(self)]; ok {
+        handler.OnTitleChange(
             CefBrowserT{browser},
             C.GoString(title),
         )
@@ -67,8 +82,8 @@ func go_OnTitleChange(self *C.struct__cef_display_handler_t,
 func go_OnTooltip(self *C.struct__cef_display_handler_t,
         browser * C.struct__cef_browser_t,
         text *C.char) int {
-    if globalDisplayHandler != nil {
-        bVal := globalDisplayHandler.OnToolTip(
+    if handler, ok := displayHandlerMap[unsafe.Pointer(self)]; ok {
+        bVal := handler.OnToolTip(
             CefBrowserT{browser},
             C.GoString(text),
         )
@@ -86,8 +101,8 @@ func go_OnStatusMessage(self *C.struct__cef_display_handler_t,
         browser * C.struct__cef_browser_t,
         value *C.char) {
 
-    if globalDisplayHandler != nil {
-        globalDisplayHandler.OnStatusMessage(
+    if handler, ok := displayHandlerMap[unsafe.Pointer(self)]; ok {
+        handler.OnStatusMessage(
             CefBrowserT{browser},
             C.GoString(value),
         )
@@ -103,8 +118,8 @@ func go_OnConsoleMessage(self *C.struct__cef_display_handler_t,
         source *C.char,
         line C.int) int {
 
-    if globalDisplayHandler != nil {
-        bVal := globalDisplayHandler.OnConsoleMessage(
+    if handler, ok := displayHandlerMap[unsafe.Pointer(self)]; ok {
+        bVal := handler.OnConsoleMessage(
             CefBrowserT{browser},
             C.GoString(message),
             C.GoString(source),
@@ -119,17 +134,13 @@ func go_OnConsoleMessage(self *C.struct__cef_display_handler_t,
     return 0
 }
 
-func InitializeDisplayHandler() *C.struct__cef_display_handler_t {
-    var handler *C.struct__cef_display_handler_t
-    handler = (*C.struct__cef_display_handler_t)(
+func NewDisplayHandlerT(display DisplayHandler) DisplayHandlerT {
+    var handler DisplayHandlerT
+    handler.CStruct = (*C.struct__cef_display_handler_t)(
             C.calloc(1, C.sizeof_struct__cef_display_handler_t))
-    C.initialize_display_handler(handler)
-    go_AddRef(unsafe.Pointer(handler))
-    Logger.Infof("_DisplayHandler: %x", unsafe.Pointer(handler))
+    C.initialize_display_handler(handler.CStruct)
+    go_AddRef(unsafe.Pointer(handler.CStruct))
+    Logger.Infof("_DisplayHandler: %x", unsafe.Pointer(handler.CStruct))
+    displayHandlerMap[unsafe.Pointer(handler.CStruct)] = display
     return handler
-}
-
-// set the handler you want to receive cef_display_handler_t messages from
-func SetDisplayHandler(displayHandler DisplayHandler) {
-    globalDisplayHandler = displayHandler
 }

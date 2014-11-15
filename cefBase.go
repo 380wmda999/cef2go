@@ -10,6 +10,9 @@ package cef2go
 #include <stdlib.h>
 #include "string.h"
 #include "include/capi/cef_app_capi.h"
+#include "cefBase.h"
+
+extern int releaseVoid(void * self);
 */
 import "C"
 import (
@@ -38,6 +41,7 @@ const (
 type MemoryManagedBridge struct {
     Count           int
     Deconstructor   func(it unsafe.Pointer)
+    Name            string
 }
 
 var (
@@ -45,8 +49,14 @@ var (
     refCountLock sync.Mutex
 )
 
+
+
+
 //export go_AddRef
-func go_AddRef(it unsafe.Pointer) int {
+func go_AddRef(it unsafe.Pointer) {
+    if it == nil {
+        return
+    }
     refCountLock.Lock()
     defer refCountLock.Unlock()
 
@@ -54,14 +64,16 @@ func go_AddRef(it unsafe.Pointer) int {
         //Logger.Println("Known Ref_Add: ", it)
         m.Count++
         memoryBridge[it] = m
-        return m.Count
+        return
     }
     Logger.Warnf("Unknown Ref_Add: %x\n", it)
-    return 1
 }
 
 //export go_Release
 func go_Release(it unsafe.Pointer) int {
+    if it == nil {
+        return 0
+    }
     refCountLock.Lock()
     defer refCountLock.Unlock()
 
@@ -73,35 +85,58 @@ func go_Release(it unsafe.Pointer) int {
             }
             C.free(it)
             delete(memoryBridge, it)
+            return 1
         } else {
             //Logger.Println("Known Ref_Release: ", it)
             memoryBridge[it] = m
         }
-        return m.Count
+        return 0
     }
     Logger.Warnf("Unknown Ref_Release: %x\n", it)
-    return 1
+    return 0
 }
-//export go_GetRefCount
-func go_GetRefCount(it unsafe.Pointer) int {
+//export go_HasOneReferenceCount
+func go_HasOneReferenceCount(it unsafe.Pointer) int {
     refCountLock.Lock()
     defer refCountLock.Unlock()
 
     if m, ok := memoryBridge[it]; ok {
-        return m.Count
+        if m.Count == 1 {
+            return 1
+        }
+        return 0
     }
     Logger.Warnf("Unknown Ref_Count: %x\n", it)
-    return 1
+    return 0
 }
 
+func Release(w unsafe.Pointer) int {
+    return int(C.releaseVoid(w))
+}
+
+func AddRef(it unsafe.Pointer) {
+    C.add_refVoid(it)
+}
+
+
+
 //export go_CreateRef
-func go_CreateRef(it unsafe.Pointer) {
+func go_CreateRef(it unsafe.Pointer, name *C.char) {
+    goname := ""
+    if name != nil {
+        goname = C.GoString(name)
+    }
+    CreateRef(it, goname)
+}
+
+func CreateRef(it unsafe.Pointer, name string) {
     refCountLock.Lock()
     defer refCountLock.Unlock()
 
     if _, ok := memoryBridge[it]; !ok {
         var m MemoryManagedBridge
         m.Deconstructor = nil
+        m.Name = name
         memoryBridge[it] = m
         return
     }
@@ -123,6 +158,16 @@ func RegisterDestructor(it unsafe.Pointer, decon func(it unsafe.Pointer)) bool {
 func _InitializeGlobalCStructuresBase() {
      _MainArgs = (*C.struct__cef_main_args_t)(
             C.calloc(1, C.sizeof_struct__cef_main_args_t))
-     go_CreateRef(unsafe.Pointer(_MainArgs))
+     CreateRef(unsafe.Pointer(_MainArgs), "MainArgs")
      Logger.Infof("_MainArgs: %x", unsafe.Pointer(_MainArgs))
+}
+
+
+func DumpRefs() {
+    refCountLock.Lock()
+    defer refCountLock.Unlock()
+
+    for k, v := range memoryBridge {
+        Logger.Infof("%X : %#v", k, v)
+    }
 }

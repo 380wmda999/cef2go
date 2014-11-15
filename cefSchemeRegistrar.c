@@ -11,7 +11,7 @@
 
 
 
-struct _cef_resource_handler_t* cef_scheme_handler_factory_t_create(
+struct _cef_resource_handler_t* CEF_CALLBACK cef_scheme_handler_factory_t_create(
       struct _cef_scheme_handler_factory_t* self,
       struct _cef_browser_t* browser, struct _cef_frame_t* frame,
       const cef_string_t* scheme_name, struct _cef_request_t* request) {
@@ -22,7 +22,7 @@ struct _cef_resource_handler_t* cef_scheme_handler_factory_t_create(
 void intialize_cef_scheme_handler_factory(struct _cef_scheme_handler_factory_t * factory) {
     goDebugLog("initializeSchemeHandler\n");
     factory->base.size = sizeof(cef_scheme_handler_factory_t);
-    initialize_cef_base((cef_base_t*) factory);
+    initialize_cef_base((cef_base_t*) factory, "scheme_handler_factory");
     go_AddRef((cef_base_t*) factory);
     factory->create = cef_scheme_handler_factory_t_create;
 }

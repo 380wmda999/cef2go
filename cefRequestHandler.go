@@ -20,26 +20,43 @@ import (
     "unsafe"
 )
 
+var (
+    requestHandlerMap           = make(map[unsafe.Pointer]RequestHandler)
+)
+
 // Wraps the callbacks done to _cef_request_handler_t (partial implementation of callbacks)
 type RequestHandler interface {
     /** Triggered before browsing to page. Return 1 to cancel transition. 0 to continue. */
-    OnBeforeBrowse(browser CefBrowserT, request CefRequestT, isRedirect int) int
-    OnBeforeResourceLoad(browser CefBrowserT, request CefRequestT) int
+    OnBeforeBrowse(browser CefBrowserT, frame CefFrameT, request CefRequestT, isRedirect int) int
+    OnBeforeResourceLoad(browser CefBrowserT, frame CefFrameT, request CefRequestT) int
     /** Triggered when we encounter an invalid SSL cert. Return 1 to and call callback.cont() to continue or cancel the request.
         Return 0 to immediatly cancel the request.*/
     OnCertificateError(errorCode CefErrorCode, requestUrl string, errorCallback CefCertErrorCallbackT) int
+
+    GetRequestHandlerT() RequestHandlerT
+}
+
+type RequestHandlerT struct {
+    CStruct                 *C.struct__cef_request_handler_t
+}
+
+func (r RequestHandlerT) AddRef() {
+    AddRef(unsafe.Pointer(r.CStruct))
+}
+func (r RequestHandlerT) Release() {
+    Release(unsafe.Pointer(r.CStruct))
 }
 
 type CefCertErrorCallbackT struct {
     CStruct         *C.struct__cef_allow_certificate_error_callback_t
 }
 
+func (c CefCertErrorCallbackT) Release() {
+    Release(unsafe.Pointer(c.CStruct))
+}
 
-var _RequestHandler *C.struct__cef_request_handler_t // requires reference counting
-var globalRequestHandler RequestHandler
 
-
-func (c * CefCertErrorCallbackT) Cont(allow int) {
+func (c CefCertErrorCallbackT) Cont(allow int) {
     C.cef_allow_certificate_error_callback_t_cont(c.CStruct, C.int(allow))
 }
 
@@ -52,15 +69,17 @@ func go_OnBeforeBrowse(
     request *C.struct__cef_request_t,
     is_redirect int) int {
 
-    if globalRequestHandler != nil {
-        return globalRequestHandler.OnBeforeBrowse(
+    if handler, ok := requestHandlerMap[unsafe.Pointer(self)]; ok {
+        return handler.OnBeforeBrowse(
             CefBrowserT{browser},
+            CefFrameT{frame},
             CefRequestT{request},
             is_redirect,
         )
     }
     CefBrowserT{browser}.Release()
     CefRequestT{request}.Release()
+    CefFrameT{frame}.Release()
     return 0
 }
 
@@ -71,15 +90,15 @@ func go_OnBeforeResourceLoad(
     frame *C.struct__cef_frame_t,
     request *C.struct__cef_request_t) int {
 
-    defer CefFrameT{frame}.Release()
-
-    if globalRequestHandler != nil {
-        return globalRequestHandler.OnBeforeResourceLoad(
+    if handler, ok := requestHandlerMap[unsafe.Pointer(self)]; ok {
+        return handler.OnBeforeResourceLoad(
             CefBrowserT{browser},
+            CefFrameT{frame},
             CefRequestT{request},
         )
     }
     CefBrowserT{browser}.Release()
+    CefFrameT{frame}.Release()
     CefRequestT{request}.Release()
     return 0
 }
@@ -92,8 +111,8 @@ func go_GetResourceHandler(
         request *C.struct__cef_request_t) *C.struct__cef_resource_handler_t {
 
     CefBrowserT{browser}.Release()
-    CefRequestT{request}.Release()
     CefFrameT{frame}.Release()
+    CefRequestT{request}.Release()
 
     return nil
 }
@@ -105,6 +124,9 @@ func go_OnResourceRedirect(
     frame *C.struct__cef_frame_t,
     old_url * C.char,
     new_url * C.char) {
+
+    CefBrowserT{browser}.Release()
+    CefFrameT{frame}.Release()
 }
 
 //export go_GetAuthCredentials
@@ -118,6 +140,10 @@ func go_GetAuthCredentials(
     realm * C.char,
     scheme * C.char,
     callback *C.struct__cef_auth_callback_t) int {
+
+    CefBrowserT{browser}.Release()
+    CefFrameT{frame}.Release()
+    Release(unsafe.Pointer(callback))
     return 1
 }
 
@@ -128,6 +154,8 @@ func go_OnQuotaRequest(
     origin_url *C.char,
     new_size int64,
     callback *C.struct__cef_quota_callback_t) int {
+    CefBrowserT{browser}.Release()
+    Release(unsafe.Pointer(callback))
     return 1
 }
 
@@ -139,6 +167,8 @@ func go_OnProtocolExecution(
     url *C.char,
     allow_os_execution unsafe.Pointer) {
     Logger.Infof("go_OnProtocolExecution")
+
+    CefBrowserT{browser}.Release()
 }
 
 
@@ -149,13 +179,14 @@ func go_OnCertificateError(
     request_url *C.char,
     callback *C.struct__cef_allow_certificate_error_callback_t) int {
 
-    if globalRequestHandler != nil {
-        return globalRequestHandler.OnCertificateError(
+    if handler, ok := requestHandlerMap[unsafe.Pointer(self)]; ok {
+        return handler.OnCertificateError(
             CefErrorCode(cert_error),
             C.GoString(request_url),
             CefCertErrorCallbackT{callback},
         )
     }
+    CefCertErrorCallbackT{callback}.Release()
     return 0
 }
 
@@ -167,6 +198,9 @@ func go_OnBeforePluginLoad(
     url *C.char,
     policy_url *C.char,
     info *C.struct__cef_web_plugin_info_t) int {
+
+    CefBrowserT{browser}.Release()
+    Release(unsafe.Pointer(info))
     return 1
 }
 
@@ -175,7 +209,7 @@ func go_OnPluginCrashed(
     self *C.struct__cef_request_handler_t,
     browser *C.struct__cef_browser_t,
     plugin_path *C.char) {
-
+    CefBrowserT{browser}.Release()
 }
 
 //export go_OnRenderProcessTerminated
@@ -184,20 +218,18 @@ func go_OnRenderProcessTerminated(
     browser *C.struct__cef_browser_t,
     status int, //C.enum_cef_termination_status_t
     ) {
-
+    CefBrowserT{browser}.Release()
 }
 
 
-func InitializeRequestHandler() *C.struct__cef_request_handler_t {
-    var handler *C.struct__cef_request_handler_t
-    handler = (*C.struct__cef_request_handler_t)(
+func NewRequestHandlerT(request RequestHandler) RequestHandlerT {
+    var handler RequestHandlerT
+    handler.CStruct = (*C.struct__cef_request_handler_t)(
             C.calloc(1, C.sizeof_struct__cef_request_handler_t))
-    C.initialize_request_handler(handler)
-    go_AddRef(unsafe.Pointer(handler))
-    Logger.Infof("_RequestHandler: %x", unsafe.Pointer(handler))
+    C.initialize_request_handler(handler.CStruct)
+    go_AddRef(unsafe.Pointer(handler.CStruct))
+    Logger.Infof("_RequestHandler: %x", unsafe.Pointer(handler.CStruct))
+    requestHandlerMap[unsafe.Pointer(handler.CStruct)] = request
     return handler
 }
 
-func SetRequestHandler(reqHandler RequestHandler) {
-    globalRequestHandler = reqHandler
-}
