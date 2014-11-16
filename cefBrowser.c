@@ -14,6 +14,7 @@ struct _cef_browser_host_t* cef_browser_t_get_host(struct _cef_browser_t* self) 
     return self->get_host(self);
 }
 
+
 int cef_browser_t_can_go_back(struct _cef_browser_t* self) {
     return self->can_go_back(self);
 }

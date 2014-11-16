@@ -27,6 +27,9 @@ func (c CommandLineT) Release() {
 type CefListValueT struct {
     CStruct             *C.struct__cef_list_value_t
 }
+func (c CefListValueT) AddRef() {
+    AddRef(unsafe.Pointer(c.CStruct))
+}
 func (c CefListValueT) Release() {
     Release(unsafe.Pointer(c.CStruct))
 }
@@ -34,6 +37,14 @@ func (c CefListValueT) Release() {
 type BrowserProcessHandlerT struct {
     CStruct             *C.struct__cef_browser_process_handler_t
 }
+
+func (c BrowserProcessHandlerT) AddRef() {
+    AddRef(unsafe.Pointer(c.CStruct))
+}
+func (c BrowserProcessHandlerT) Release() {
+    Release(unsafe.Pointer(c.CStruct))
+}
+
 
 var (
     browserProcessHandlerMap            = make(map[unsafe.Pointer]BrowserProcessHandler)
@@ -92,7 +103,7 @@ func OnRenderProcessThreadCreated(self *C.struct__cef_browser_process_handler_t,
     CefListValueT{extraInfo}.Release()
 }
 
-func NewBrowserHandlerT(handler BrowserProcessHandler) BrowserProcessHandlerT {
+func NewBrowserProcessHandlerT(handler BrowserProcessHandler) BrowserProcessHandlerT {
     var b BrowserProcessHandlerT
     b.CStruct = (*C.struct__cef_browser_process_handler_t)(
             C.calloc(1, C.sizeof_struct__cef_browser_process_handler_t))

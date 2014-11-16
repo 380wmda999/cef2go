@@ -56,6 +56,13 @@ type CefBrowserHostT struct {
     CStruct     *C.struct__cef_browser_host_t
 }
 
+func (c CefBrowserHostT) Release() {
+    Release(unsafe.Pointer(c.CStruct))
+}
+func (c CefBrowserHostT) AddRef() {
+    AddRef(unsafe.Pointer(c.CStruct))
+}
+
 type CefRequestContextT struct {
     CStruct     *C.struct__cef_request_context_t
 }

@@ -75,3 +75,122 @@ int cef_request_t_get_resource_type(struct _cef_request_t * self) {
 int cef_request_t_get_transition_type(struct _cef_request_t * self) {
     return self->get_transition_type(self);
 }
+
+
+
+/// post_data_t
+
+
+///
+// Returns true (1) if this object is read-only.
+///
+int cef_post_data_is_read_only(struct _cef_post_data_t* self) {
+    return self->is_read_only(self);
+}
+
+///
+// Returns the number of existing post data elements.
+///
+size_t cef_post_data_get_element_count(struct _cef_post_data_t* self) {
+    return self->get_element_count(self);
+}
+
+///
+// Retrieve the post data elements.
+///
+void cef_post_data_get_elements(struct _cef_post_data_t* self,
+  size_t* elementsCount, struct _cef_post_data_element_t** elements) {
+    return self->get_elements(self, elementsCount, elements);
+}
+
+///
+// Remove the specified post data element.  Returns true (1) if the removal
+// succeeds.
+///
+int cef_post_data_remove_element(struct _cef_post_data_t* self,
+  struct _cef_post_data_element_t* element) {
+    return self->remove_element(self, element);
+}
+
+///
+// Add the specified post data element.  Returns true (1) if the add succeeds.
+///
+int cef_post_data_add_element(struct _cef_post_data_t* self,
+  struct _cef_post_data_element_t* element) {
+    return self->add_element(self, element);
+}
+
+///
+// Remove all existing post data elements.
+///
+void cef_post_data_remove_elements(struct _cef_post_data_t* self) {
+    return self->remove_elements(self);
+}
+
+struct _cef_post_data_element_t* get_element_pointer(int i, struct _cef_post_data_element_t** elements) {
+    return elements[i];
+}
+
+
+
+
+
+/// post data element
+int cef_post_data_element_is_read_only(struct _cef_post_data_element_t* self) {
+    return self->is_read_only(self);
+}
+
+///
+// Remove all contents from the post data element.
+///
+void cef_post_data_element_set_to_empty(struct _cef_post_data_element_t* self) {
+    self->set_to_empty(self);
+}
+
+///
+// The post data element will represent a file.
+///
+void cef_post_data_element_set_to_file(struct _cef_post_data_element_t* self, const cef_string_t* fileName) {
+    self->set_to_file(self, fileName);
+}
+
+///
+// The post data element will represent bytes.  The bytes passed in will be
+// copied.
+///
+void cef_post_data_element_set_to_bytes(struct _cef_post_data_element_t* self, size_t size, const void* bytes) {
+    self->set_to_bytes(self, size, bytes);
+}
+
+///
+// Return the type of this post data element.
+///
+cef_postdataelement_type_t cef_post_data_element_get_type(struct _cef_post_data_element_t* self) {
+    return self->get_type(self);
+}
+
+///
+// Return the file name.
+///
+// The resulting string must be freed by calling cef_string_userfree_free().
+cef_string_utf8_t* cef_post_data_element_get_file(struct _cef_post_data_element_t* self) {
+    cef_string_userfree_t str = self->get_file(self);
+    cef_string_utf8_t * out = cefStringToUtf8(str);
+    cef_string_userfree_free(str);
+    return out;
+}
+
+///
+// Return the number of bytes.
+///
+size_t cef_post_data_element_get_bytes_count(struct _cef_post_data_element_t* self) {
+    return self->get_bytes_count(self);
+}
+
+///
+// Read up to |size| bytes into |bytes| and return the number of bytes
+// actually read.
+///
+size_t cef_post_data_element_get_bytes(struct _cef_post_data_element_t* self, size_t size, void* bytes) {
+    return self->get_bytes(self, size, bytes);
+}

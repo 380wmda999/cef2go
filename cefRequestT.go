@@ -23,6 +23,27 @@ extern void cef_request_t_set_flags(struct _cef_request_t * self, int f);
 extern cef_string_utf8_t * cef_request_t_get_first_party_for_cookies(struct _cef_request_t * self);
 extern int cef_request_t_get_resource_type(struct _cef_request_t * self);
 extern int cef_request_t_get_transition_type(struct _cef_request_t * self);
+
+// post data
+extern int cef_post_data_is_read_only(struct _cef_post_data_t* self);
+extern size_t cef_post_data_get_element_count(struct _cef_post_data_t* self);
+extern void cef_post_data_get_elements(struct _cef_post_data_t* self, size_t* elementsCount, struct _cef_post_data_element_t** elements);
+extern int cef_post_data_remove_element(struct _cef_post_data_t* self, struct _cef_post_data_element_t* element);
+extern int cef_post_data_add_element(struct _cef_post_data_t* self, struct _cef_post_data_element_t* element);
+extern void cef_post_data_remove_elements(struct _cef_post_data_t* self);
+
+extern struct _cef_post_data_element_t* get_element_pointer(int i, struct _cef_post_data_element_t** elements);
+
+
+// post data element
+extern int cef_post_data_element_is_read_only(struct _cef_post_data_element_t* self);
+extern void cef_post_data_element_set_to_empty(struct _cef_post_data_element_t* self);
+extern void cef_post_data_element_set_to_file(struct _cef_post_data_element_t* self, const cef_string_t* fileName);
+extern void cef_post_data_element_set_to_bytes(struct _cef_post_data_element_t* self, size_t size, const void* bytes);
+extern cef_postdataelement_type_t cef_post_data_element_get_type(struct _cef_post_data_element_t* self);
+extern cef_string_utf8_t* cef_post_data_element_get_file(struct _cef_post_data_element_t* self);
+extern size_t cef_post_data_element_get_bytes_count(struct _cef_post_data_element_t* self);
+extern size_t cef_post_data_element_get_bytes(struct _cef_post_data_element_t* self, size_t size, void* bytes);
 */
 import "C"
 
@@ -37,6 +58,26 @@ type CefRequestT struct {
 
 type CefPostDataT struct {
     CStruct *C.struct__cef_post_data_t
+}
+
+type CefPostDataElementT struct {
+    CStruct *C.struct__cef_post_data_element_t
+}
+
+func (b CefPostDataElementT) Release() {
+    C.releaseVoid(unsafe.Pointer(b.CStruct))
+}
+
+func (b CefPostDataElementT) AddRef() {
+    C.add_refVoid(unsafe.Pointer(b.CStruct))
+}
+
+func (b CefPostDataT) Release() {
+    C.releaseVoid(unsafe.Pointer(b.CStruct))
+}
+
+func (b CefPostDataT) AddRef() {
+    C.add_refVoid(unsafe.Pointer(b.CStruct))
 }
 
 func (b CefRequestT) Release() {
@@ -82,9 +123,7 @@ func (r CefRequestT) SetMethod(method string) {
 
 func (r CefRequestT) GetPostData() CefPostDataT {
     postDataCStruct := C.cef_request_t_get_post_data(r.CStruct)
-    var toRet CefPostDataT
-    toRet.CStruct = postDataCStruct
-    return toRet
+    return CefPostDataT{postDataCStruct}
 }
 
 func (r CefRequestT) SetPostData(data CefPostDataT) {
@@ -133,4 +172,73 @@ func (r CefRequestT) GetResourceType() int {
 
 func (r CefRequestT) GetTransitionType() int {
     return int(C.cef_request_t_get_transition_type(r.CStruct))
+}
+
+
+
+
+
+func (p CefPostDataT) IsReadOnly() bool {
+    return C.cef_post_data_is_read_only(p.CStruct) == 1
+}
+func (p CefPostDataT) GetElementCount() int {
+    return int(C.cef_post_data_get_element_count(p.CStruct))
+}
+func (p CefPostDataT) GetElements(numToGet int) []CefPostDataElementT {
+    var numElements C.size_t = C.size_t(numToGet)
+    elements := (**C.struct__cef_post_data_element_t)(
+        C.calloc(numElements, 32)) /// i should really have the size of a pointer....
+
+    C.cef_post_data_get_elements(p.CStruct, &numElements, elements)
+
+    numEle := int(numElements)
+    out := make([]CefPostDataElementT, numEle)
+    for i := range out {
+        out[i].CStruct = C.get_element_pointer(C.int(i), elements)
+    }
+    C.free(unsafe.Pointer(elements))
+    return out
+}
+func (p CefPostDataT) RemoveElement(element CefPostDataElementT) bool {
+    element.AddRef()
+    return C.cef_post_data_remove_element(p.CStruct, element.CStruct) == 1
+}
+func (p CefPostDataT) AddElement(element CefPostDataElementT) bool {
+    element.AddRef()
+    return C.cef_post_data_add_element(p.CStruct, element.CStruct) == 1
+}
+func (p CefPostDataT) RemoveElements() {
+    C.cef_post_data_remove_elements(p.CStruct)
+}
+
+
+
+// post data element
+func (e CefPostDataElementT) IsReadOnly() bool {
+    return C.cef_post_data_element_is_read_only(e.CStruct) == 1
+}
+func (e CefPostDataElementT) SetToEmpty() {
+    C.cef_post_data_element_set_to_empty(e.CStruct)
+}
+func (e CefPostDataElementT) SetToFile(fileName string) {
+    panic("Not implemented")
+    //C.cef_post_data_element_set_to_file(e.CStruct, const cef_string_t* fileName)
+}
+func (e CefPostDataElementT) SetToBytes(b []byte) {
+    C.cef_post_data_element_set_to_bytes(e.CStruct, C.size_t(len(b)), unsafe.Pointer(&b[0]))
+}
+func (e CefPostDataElementT) GetType() C.cef_postdataelement_type_t {
+    return C.cef_post_data_element_get_type(e.CStruct)
+}
+func (e CefPostDataElementT) GetFile() string {
+    cefString := C.cef_post_data_element_get_file(e.CStruct)
+    defer C.cef_string_userfree_utf8_free(cefString)
+    return C.GoString(cefString.str)
+}
+func (e CefPostDataElementT) GetBytesCount() int {
+    return int(C.cef_post_data_element_get_bytes_count(e.CStruct))
+}
+func (e CefPostDataElementT) GetBytes(b []byte) int {
+
+    return int(C.cef_post_data_element_get_bytes(e.CStruct, C.size_t(len(b)), unsafe.Pointer(&b[0])))
 }

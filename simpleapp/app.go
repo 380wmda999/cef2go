@@ -26,7 +26,7 @@ func (app *myAppHandler) GetResourceBundleHandler() {
 
 }
 func (app *myAppHandler) GetBrowserProcessHandler() cef2go.BrowserProcessHandler {
-    cef2go.AddRef(unsafe.Pointer(app.browserProcessHandler.GetBrowserProcessHandlerT().CStruct))
+    app.browserProcessHandler.GetBrowserProcessHandlerT().AddRef()
     return app.browserProcessHandler
 }
 func (app *myAppHandler) GetRenderProcessHandler() {

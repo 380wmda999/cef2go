@@ -18,7 +18,7 @@ func main() {
     var app myAppHandler
     app.handler = cef2go.NewAppHandlerT(&app)
     var browserPHandler myBrowserProcessHandler
-    browserPHandler.handler = cef2go.NewBrowserHandlerT(&browserPHandler)
+    browserPHandler.handler = cef2go.NewBrowserProcessHandlerT(&browserPHandler)
     app.browserProcessHandler = &browserPHandler
 
     ret := cef2go.ExecuteProcess(unsafe.Pointer(hInstance), &app)
