@@ -26,6 +26,13 @@ type ClientHandlerT struct {
     CStruct             *C.struct__cef_client_t
 }
 
+func (c ClientHandlerT) AddRef() {
+    AddRef(unsafe.Pointer(c.CStruct))
+}
+func (c ClientHandlerT) Release() {
+    Release(unsafe.Pointer(c.CStruct))
+}
+
 type ClientHandler interface {
     GetContextMenuHandler() ContextMenuHandlerT
     GetDialogHandler() DialogHandlerT
