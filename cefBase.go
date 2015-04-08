@@ -13,6 +13,7 @@ package cef2go
 #include "cefBase.h"
 
 extern int releaseVoid(void * self);
+extern void appendToMultiMap(cef_string_multimap_t into, char *key, char *val);
 */
 import "C"
 import (
@@ -170,4 +171,23 @@ func DumpRefs() {
     for k, v := range memoryBridge {
         Logger.Infof("%X : %#v", k, v)
     }
+}
+
+
+func copyIntoMultiMap(into C.cef_string_multimap_t, from map[string][]string) {
+    for k, vals := range from {
+        copyKeyIntoMultiMap(into, k, vals)
+    }
+}
+func copyKeyIntoMultiMap(into C.cef_string_multimap_t, key string, vals []string) {
+    keyCStr := C.CString(key)
+    defer C.free(unsafe.Pointer(keyCStr))
+    for _, v := range vals {
+        copyKeyValIntoMultiMap(into, keyCStr, v)
+    }
+}
+func copyKeyValIntoMultiMap(into C.cef_string_multimap_t, keyCStr *C.char, v string) {
+    valCStr := C.CString(v)
+    defer C.free(unsafe.Pointer(valCStr))
+    C.appendToMultiMap(into, keyCStr, valCStr)
 }

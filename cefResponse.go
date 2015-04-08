@@ -81,8 +81,9 @@ func (r CefResponseT) GetHeaderMap() map[string][]string {
     C.cef_response_t_get_header_map(r.CStruct, headerMapPtr)
     return extractCefMultiMap(headerMapPtr)
 }
-func (r CefResponseT) SetHeaderMap(map[string][]string) {
+func (r CefResponseT) SetHeaderMap(headers map[string][]string) {
     headerMapPtr := C.cef_string_multimap_alloc()
+    copyIntoMultiMap(headerMapPtr, headers)
     defer C.cef_string_multimap_free(headerMapPtr)
     C.cef_response_t_set_header_map(r.CStruct, headerMapPtr)
 }

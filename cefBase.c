@@ -95,3 +95,16 @@ cef_string_t * cefString16CastToCefString(cef_string_utf16_t * source) {
 cef_string_utf16_t * cefStringCastToCefString16(cef_string_t * source) {
     return (cef_string_utf16_t *) source;
 }
+
+
+void appendToMultiMap(cef_string_multimap_t into, char *key, char *val) {
+    cef_string_t * keyCef = cef_string_userfree_utf16_alloc();
+    cef_string_from_utf8(key, strlen(key), keyCef);
+    cef_string_t * valCef = cef_string_userfree_utf16_alloc();
+    cef_string_from_utf8(val, strlen(val), valCef);
+
+    cef_string_multimap_append(into, keyCef, valCef);
+
+    cef_string_userfree_utf16_free(keyCef);
+    cef_string_userfree_utf16_free(valCef);
+}
